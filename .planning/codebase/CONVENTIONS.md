@@ -1,3 +1,7 @@
+---
+last_mapped_commit: 14fdd09a3dbed09f409564b8a6c1c58dbe6b291e
+last_mapped_at: 2026-09-25
+---
 # Coding Conventions & Patterns
 
 **Analysis Date:** 2026-09-25
@@ -26,6 +30,7 @@ WeatherError (base class with statusCode and error code)
 
 **Route Error Envelope:**
 Errors caught in `src/app/api/weather/route.ts` are converted to standard JSON envelopes:
+
 ```json
 {
   "status": "error",
@@ -38,6 +43,7 @@ Errors caught in `src/app/api/weather/route.ts` are converted to standard JSON e
   }
 }
 ```
+
 **Security:** Internal stack traces, raw exceptions, database errors, and upstream URLs are never exposed in production error payloads.
 
 ## Condition Code Safety

@@ -1,3 +1,7 @@
+---
+last_mapped_commit: 14fdd09a3dbed09f409564b8a6c1c58dbe6b291e
+last_mapped_at: 2026-09-25
+---
 # External Integrations
 
 **Analysis Date:** 2026-09-25
@@ -7,6 +11,7 @@
 The application orchestrates weather data across a configurable fallback chain (`service.ts`).
 
 ### 1. WeatherAPI (Primary)
+
 - **Endpoint:** `https://api.weatherapi.com/v1/current.json`
 - **Authentication:** `WEATHER_API_KEY` passed as query parameter `key`
 - **Timeout:** 3000ms (`DEFAULT_WEATHERAPI_TIMEOUT_MS` / `WEATHERAPI_TIMEOUT_MS`)
@@ -14,6 +19,7 @@ The application orchestrates weather data across a configurable fallback chain (
 - **Terms / Quota:** Free tier 1,000,000 calls/month; requires attribution; redistribution/proxying restricted without commercial agreement
 
 ### 2. Meteosource (Fallback 1)
+
 - **Endpoint:** `https://www.meteosource.com/api/v1/free/point`
 - **Authentication:** `METEOSOURCE_API_KEY` passed as query parameter `key`
 - **Timeout:** 3500ms (`DEFAULT_METEOSOURCE_TIMEOUT_MS` / `METEOSOURCE_TIMEOUT_MS`)
@@ -21,6 +27,7 @@ The application orchestrates weather data across a configurable fallback chain (
 - **Terms / Quota:** Free tier 400 calls/day; intended for internal testing; commercial plan needed for public API proxying
 
 ### 3. Open-Meteo Weather (Fallback 2 / Non-commercial Zero-Key)
+
 - **Endpoint:** `https://api.open-meteo.com/v1/forecast`
 - **Authentication:** None (zero-key open access)
 - **Timeout:** 3000ms (`DEFAULT_OPEN_METEO_TIMEOUT_MS` / `OPEN_METEO_TIMEOUT_MS`)
@@ -28,6 +35,7 @@ The application orchestrates weather data across a configurable fallback chain (
 - **Terms / Quota:** CC BY 4.0 license; free up to 10,000 calls/day for non-commercial use
 
 ### 4. MET Norway (Optional Fallback)
+
 - **Endpoint:** `https://api.met.no/weatherapi/locationforecast/2.0/compact`
 - **Authentication:** None; requires identifying `User-Agent` header (`DEFAULT_PROVIDER_USER_AGENT`)
 - **Timeout:** 3500ms (`DEFAULT_MET_NO_TIMEOUT_MS` / `MET_NO_TIMEOUT_MS`)
@@ -37,6 +45,7 @@ The application orchestrates weather data across a configurable fallback chain (
 ## Geocoding Services
 
 ### Open-Meteo Geocoding API
+
 - **Endpoint:** `https://geocoding-api.open-meteo.com/v1/search`
 - **Purpose:** Resolves user-submitted city names to geographical coordinates (`latitude`, `longitude`), country, and timezone
 - **Implementation:** `src/lib/weather/location.ts` (`resolveCityByGeocoding`)
@@ -45,6 +54,7 @@ The application orchestrates weather data across a configurable fallback chain (
 ## Infrastructure & Edge Integrations
 
 ### Upstash Redis
+
 - **Role:** Distributed sliding-window rate limiting (30 requests/minute per client IP)
 - **Client:** `@upstash/redis` singleton in `src/lib/redis/client.ts`
 - **Configuration:** `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
@@ -52,6 +62,7 @@ The application orchestrates weather data across a configurable fallback chain (
 - **Fallback:** In-memory sliding-window store for local development (`src/lib/rate-limit/weather.ts`)
 
 ### Cloudflare Managed Transforms
+
 - **Role:** Edge DNS proxy, WAF protection, and visitor geolocation header enrichment
 - **Injected Headers:**
   - `CF-Connecting-IP` - Client IP extraction for rate limiting
@@ -62,5 +73,6 @@ The application orchestrates weather data across a configurable fallback chain (
   - `CF-Timezone` - Visitor IANA timezone identifier
 
 ### Vercel Edge Cache
+
 - **Role:** CDN caching for public API responses
 - **Headers:** `Vercel-CDN-Cache-Control`, `Cache-Control` (`public, s-maxage=600, stale-while-revalidate=300` for explicit cities; `private, no-store` for implicit geo)
