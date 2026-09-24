@@ -7,14 +7,19 @@ last_mapped_at: 2026-09-25
 **Analysis Date:** 2026-09-25
 
 ## 1. Upstream Provider Licensing & Redistribution
-
+ 
 - **WeatherAPI:**
-  - Free tier offers 1,000,000 calls/month, but terms restrict public proxying/redistribution of data.
-  - If deployed as a public API proxy without a commercial license, WeatherAPI should either be disabled via `WEATHER_PROVIDER_PRIMARY="open-meteo"` or maintained with an appropriate commercial plan.
+  - Verify official pricing page for current quotas (do not assume 1,000,000 calls/month without confirmation).
+  - Terms restrict public redistribution/proxying without an appropriate commercial agreement.
+  - Active only when `WEATHER_API_KEY` is explicitly configured. Never exposes API key to clients.
 - **Meteosource:**
-  - Free tier (400 calls/day) is intended for evaluation and personal use only. Public proxying requires commercial terms.
+  - Terms of Service explicitly restrict transferring or providing API access outside the customer's application.
+  - Disabled by default from the production chain (`service.ts`). Only enable via `WEATHER_PROVIDER_FALLBACKS` if explicit permission or commercial agreement is obtained.
+- **MET Norway:**
+  - Restored as legitimate default zero-key fallback.
+  - Requires identifying `User-Agent` header (`WEATHER_PROVIDER_USER_AGENT`), caching, and backend proxy architecture to respect fair-use policy.
 - **Open-Meteo:**
-  - Free non-commercial use up to 10,000 calls/day is protected under CC BY 4.0. High-volume production requires a commercial subscription.
+  - Free non-commercial use up to 10,000 calls/day under CC BY 4.0 data attribution. High-volume or commercial infrastructure must use a commercial customer plan. Default primary provider in zero-key setups.
 
 ## 2. Distributed Rate Limiting & Fail-Mode Policy
 

@@ -8,39 +8,40 @@ last_mapped_at: 2026-09-25
 
 ## Upstream Weather Providers
 
-The application orchestrates weather data across a configurable fallback chain (`service.ts`).
+The application orchestrates weather data across an explicit, configurable provider chain (`service.ts`).
+By default, if no API keys are provided, it safely chains **Open-Meteo** → **MET Norway** (both zero-key providers with legal proxy/redistribution compatibility when attributed).
 
-### 1. WeatherAPI (Primary)
+### 1. WeatherAPI (Optional Primary)
 
 - **Endpoint:** `https://api.weatherapi.com/v1/current.json`
-- **Authentication:** `WEATHER_API_KEY` passed as query parameter `key`
+- **Authentication:** `WEATHER_API_KEY` passed as query parameter `key` (never exposed to client)
 - **Timeout:** 3000ms (`DEFAULT_WEATHERAPI_TIMEOUT_MS` / `WEATHERAPI_TIMEOUT_MS`)
 - **Condition Mapping:** Proprietary integer codes (1000–1282) mapped to canonical `NormalizedCondition` via `WEATHERAPI_CONDITION_MAP` in `src/lib/weather/providers/weatherapi.ts`
-- **Terms / Quota:** Free tier 1,000,000 calls/month; requires attribution; redistribution/proxying restricted without commercial agreement
+- **Terms / Quota:** Check official pricing for current tier quotas. Free tier requires attribution; terms restrict public redistribution without an appropriate commercial agreement. Active when `WEATHER_API_KEY` is set or explicitly in `WEATHER_PROVIDER_PRIMARY`.
 
-### 2. Meteosource (Fallback 1)
-
-- **Endpoint:** `https://www.meteosource.com/api/v1/free/point`
-- **Authentication:** `METEOSOURCE_API_KEY` passed as query parameter `key`
-- **Timeout:** 3500ms (`DEFAULT_METEOSOURCE_TIMEOUT_MS` / `METEOSOURCE_TIMEOUT_MS`)
-- **Condition Mapping:** String icon codes (e.g. `sunny`, `rain`, `tstorm`) mapped to canonical `NormalizedCondition` via `METEOSOURCE_ICON_MAP` in `src/lib/weather/providers/meteosource.ts`
-- **Terms / Quota:** Free tier 400 calls/day; intended for internal testing; commercial plan needed for public API proxying
-
-### 3. Open-Meteo Weather (Fallback 2 / Non-commercial Zero-Key)
+### 2. Open-Meteo Weather (Default Primary / Non-commercial Zero-Key)
 
 - **Endpoint:** `https://api.open-meteo.com/v1/forecast`
 - **Authentication:** None (zero-key open access)
 - **Timeout:** 3000ms (`DEFAULT_OPEN_METEO_TIMEOUT_MS` / `OPEN_METEO_TIMEOUT_MS`)
 - **Condition Mapping:** WMO standard weather codes (0–99) mapped to canonical `NormalizedCondition` via `normalizeWmoCode` in `src/lib/weather/condition.ts`
-- **Terms / Quota:** CC BY 4.0 license; free up to 10,000 calls/day for non-commercial use
+- **Terms / Quota:** CC BY 4.0 data licensing. Free non-commercial API usage up to 10,000 calls/day. Commercial applications requiring SLA or higher volume must use a commercial customer plan.
 
-### 4. MET Norway (Optional Fallback)
+### 3. MET Norway (Default Fallback / Zero-Key)
 
 - **Endpoint:** `https://api.met.no/weatherapi/locationforecast/2.0/compact`
-- **Authentication:** None; requires identifying `User-Agent` header (`DEFAULT_PROVIDER_USER_AGENT`)
+- **Authentication:** None; requires identifying `User-Agent` header (`WEATHER_PROVIDER_USER_AGENT` / `maybesurya-weather-api/1.0 (+https://weather.maybesurya.dev)`)
 - **Timeout:** 3500ms (`DEFAULT_MET_NO_TIMEOUT_MS` / `MET_NO_TIMEOUT_MS`)
 - **Condition Mapping:** Symbol code strings mapped via `MET_NO_SYMBOL_MAP` in `src/lib/weather/providers/met-no.ts`
-- **Terms / Quota:** Open Norwegian government data, fair-use rate limiting
+- **Terms / Quota:** Open Norwegian Meteorological Institute data (NLOD / CC BY 4.0). Requires backend proxy with caching, polite request intervals, and identifying User-Agent.
+
+### 4. Meteosource (Optional Configurable Fallback)
+
+- **Endpoint:** `https://www.meteosource.com/api/v1/free/point`
+- **Authentication:** `METEOSOURCE_API_KEY` passed as query parameter `key`
+- **Timeout:** 3500ms (`DEFAULT_METEOSOURCE_TIMEOUT_MS` / `METEOSOURCE_TIMEOUT_MS`)
+- **Condition Mapping:** String icon codes (e.g. `sunny`, `rain`, `tstorm`) mapped to canonical `NormalizedCondition` via `METEOSOURCE_ICON_MAP` in `src/lib/weather/providers/meteosource.ts`
+- **Terms / Quota:** Terms of Service restrict transfer or access to data outside the customer's direct application. **Disabled by default** from the production chain; only enabled if explicitly configured with an appropriate license.
 
 ## Geocoding Services
 
