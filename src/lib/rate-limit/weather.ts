@@ -118,8 +118,39 @@ export async function checkRateLimit(clientIp: string): Promise<RateLimitResult>
   const failMode = (process.env.RATE_LIMIT_FAIL_MODE || "closed").toLowerCase();
   const limiter = getUpstashLimiter();
 
-  // If Upstash Redis credentials are not provided (e.g. local development), use in-memory sliding window
+  // Production requires Upstash Redis; do not silently downgrade to in-memory protection.
   if (!limiter) {
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        JSON.stringify({
+          event: "rate_limiter_missing_redis_in_production",
+          message: "Upstash Redis credentials are required in production.",
+          failMode,
+          timestamp: new Date().toISOString(),
+        })
+      );
+
+      if (failMode === "open") {
+        const nowSeconds = Math.ceil(Date.now() / 1000);
+        return {
+          success: true,
+          limit: RATE_LIMIT_MAX_REQUESTS,
+          remaining: RATE_LIMIT_MAX_REQUESTS,
+          reset: nowSeconds + RATE_LIMIT_WINDOW_SECONDS,
+          headers: {
+            "X-RateLimit-Limit": RATE_LIMIT_MAX_REQUESTS.toString(),
+            "X-RateLimit-Remaining": RATE_LIMIT_MAX_REQUESTS.toString(),
+            "X-RateLimit-Reset": (nowSeconds + RATE_LIMIT_WINDOW_SECONDS).toString(),
+          },
+        };
+      }
+
+      throw new RateLimitUnavailableError(
+        "Rate limiter service is temporarily unavailable."
+      );
+    }
+
+    // In-memory sliding window fallback is strictly for local development and test environments
     return checkMemoryRateLimit(clientIp);
   }
 

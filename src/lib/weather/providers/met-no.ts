@@ -126,6 +126,22 @@ export function calculateApparentTemperature(
   return Number(apparent.toFixed(1));
 }
 
+interface MetNoCacheEntry {
+  result: ProviderWeatherResult;
+  expiresAt: number;
+  lastModified?: string;
+}
+
+const metNoCache = new Map<string, MetNoCacheEntry>();
+
+/**
+ * Resets the MET Norway in-memory freshness cache.
+ * Exported for testing purposes.
+ */
+export function clearMetNoCache(): void {
+  metNoCache.clear();
+}
+
 export class MetNoProvider implements IWeatherProvider {
   public readonly name = "met-no" as const;
 
@@ -138,18 +154,59 @@ export class MetNoProvider implements IWeatherProvider {
       context?.timeoutMs ||
       DEFAULT_MET_NO_TIMEOUT_MS;
 
+    const cacheKey = `${coordinates.latitude.toFixed(4)},${coordinates.longitude.toFixed(4)}`;
+    const now = Date.now();
+    const cached = metNoCache.get(cacheKey);
+
+    // Upstream Freshness: If MET Norway supplied an Expires header and it has not passed,
+    // reuse the cached result without generating redundant upstream traffic.
+    if (cached && cached.expiresAt > now) {
+      if (context?.resolvedLocation) {
+        return {
+          ...cached.result,
+          location: context.resolvedLocation,
+        };
+      }
+      return cached.result;
+    }
+
     const url = new URL("https://api.met.no/weatherapi/locationforecast/2.0/compact");
     url.searchParams.set("lat", coordinates.latitude.toFixed(4));
     url.searchParams.set("lon", coordinates.longitude.toFixed(4));
 
+    const requestHeaders: Record<string, string> = {
+      "User-Agent": DEFAULT_PROVIDER_USER_AGENT,
+      Accept: "application/json",
+    };
+
+    // If we have an expired entry with Last-Modified, send conditional validation
+    if (cached?.lastModified) {
+      requestHeaders["If-Modified-Since"] = cached.lastModified;
+    }
+
     const response = await fetchWithTimeout(url, {
       timeoutMs,
       providerName: this.name,
-      headers: {
-        "User-Agent": DEFAULT_PROVIDER_USER_AGENT,
-        Accept: "application/json",
-      },
+      headers: requestHeaders,
     });
+
+    // Handle 304 Not Modified: Upstream data remains fresh
+    if (response.status === 304 && cached) {
+      const expiresHeader = response.headers.get("expires");
+      if (expiresHeader) {
+        const parsedExpires = new Date(expiresHeader).getTime();
+        if (!isNaN(parsedExpires) && parsedExpires > now) {
+          cached.expiresAt = parsedExpires;
+        }
+      }
+      if (context?.resolvedLocation) {
+        return {
+          ...cached.result,
+          location: context.resolvedLocation,
+        };
+      }
+      return cached.result;
+    }
 
     if (response.status === 403 || response.status === 429) {
       throw new ProviderRateLimitError(
@@ -226,7 +283,7 @@ export class MetNoProvider implements IWeatherProvider {
       timezone: "UTC",
     };
 
-    return {
+    const result: ProviderWeatherResult = {
       provider: this.name,
       coordinates: {
         latitude: coordinates.latitude,
@@ -246,5 +303,30 @@ export class MetNoProvider implements IWeatherProvider {
         ? new Date(firstPoint.time).toISOString()
         : new Date().toISOString(),
     };
+
+    // Cache according to upstream Expires header to prevent unnecessary traffic
+    const expiresHeader = response.headers.get("expires");
+    const lastModifiedHeader = response.headers.get("last-modified");
+    if (expiresHeader) {
+      const parsedExpires = new Date(expiresHeader).getTime();
+      if (!isNaN(parsedExpires) && parsedExpires > now) {
+        metNoCache.set(cacheKey, {
+          result,
+          expiresAt: parsedExpires,
+          lastModified: lastModifiedHeader ?? undefined,
+        });
+
+        // Prune aged entries if cache grows
+        if (metNoCache.size > 200) {
+          for (const [k, v] of metNoCache.entries()) {
+            if (v.expiresAt <= now) {
+              metNoCache.delete(k);
+            }
+          }
+        }
+      }
+    }
+
+    return result;
   }
 }

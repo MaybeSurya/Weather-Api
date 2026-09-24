@@ -42,5 +42,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /WEATHER_API_REVISION_MASTER_PROMPT.md
-/tests
 /AGENTS.md
