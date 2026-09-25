@@ -14,11 +14,11 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Maybesurya Weather — Real-Time Forecasts",
-  description: "Global weather dashboard and public developer API with fast 24-hour forecasts and 7-day outlooks.",
+  title: "MaybeSurya Weather — Real-Time Forecasts",
+  description: "Free global weather dashboard and public developer API with fast 24-hour forecasts and 7-day outlooks.",
   openGraph: {
-    title: "Maybesurya Weather",
-    description: "Simple, accurate weather forecasts and public developer API.",
+    title: "MaybeSurya Weather",
+    description: "Fast, accurate weather forecasts and public developer API.",
     url: "https://weather.maybesurya.dev",
     siteName: "maybesurya.dev",
     type: "website",

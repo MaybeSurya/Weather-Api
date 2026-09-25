@@ -132,7 +132,7 @@ export function WeatherDashboard() {
               </div>
               <div className="flex flex-col">
                 <span className="font-display text-[17px] font-semibold text-on-surface tracking-tight group-hover:text-primary transition-colors">
-                  Maybesurya Weather
+                  MaybeSurya Weather
                 </span>
                 <span className="text-[11px] font-semibold text-primary">
                   Live Weather &amp; Forecasts
@@ -496,7 +496,7 @@ export function WeatherDashboard() {
           {/* Bottom Bar */}
           <div className="pt-6 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-outline">
             <div className="flex flex-wrap items-center gap-2">
-              <span>© 2025 Maybesurya Weather.</span>
+              <span>© {new Date().getFullYear()} MaybeSurya Weather.</span>
               <span className="text-on-surface-variant font-medium">
                 Made with <span className="text-rose-500 animate-pulse inline-block">❤️</span> by{" "}
                 <a
@@ -505,7 +505,7 @@ export function WeatherDashboard() {
                   rel="noopener noreferrer"
                   className="text-primary hover:underline font-semibold"
                 >
-                  maybesurya
+                  MaybeSurya
                 </a>
               </span>
             </div>
