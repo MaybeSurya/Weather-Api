@@ -1,107 +1,184 @@
 "use client";
 
 /**
- * Shimmering skeleton loading placeholder matching the Apple Weather Bento layout.
- * Mirrors the structure of maybesurya_weather_loading_skeleton_state to eliminate layout shift.
+ * Shimmering skeleton loading placeholder matching maybesurya_weather_loading_skeleton_state.
+ * Replicates the exact layout of the dashboard to eliminate layout shift during telemetry fetching.
  */
 export function WeatherSkeleton() {
   const shimmer = (
-    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.8s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.8s_infinite] bg-gradient-to-r from-transparent via-surface-bright/40 to-transparent pointer-events-none" />
   );
 
   return (
-    <div className="w-full flex flex-col gap-8 select-none" aria-busy="true">
-      {/* Top Sync & Location Skeleton Header */}
-      <div className="flex flex-col items-center justify-center text-center pt-2 pb-2 space-y-3">
-        <div className="h-6 w-36 rounded-full bg-white/[0.06] relative overflow-hidden">
-          {shimmer}
-        </div>
-        <div className="h-4 w-28 rounded-full bg-white/[0.04] relative overflow-hidden">
-          {shimmer}
-        </div>
-        {/* Giant Temperature Skeleton */}
-        <div className="h-28 w-44 rounded-3xl bg-white/[0.08] relative overflow-hidden my-2 shadow-inner">
-          {shimmer}
-        </div>
-        <div className="h-5 w-40 rounded-full bg-white/[0.05] relative overflow-hidden">
-          {shimmer}
-        </div>
-      </div>
-
-      {/* Row 1: Hourly Forecast (8 Cols) + Precipitation Map (4 Cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-8 apple-bento rounded-3xl p-6 h-60 flex flex-col justify-between relative overflow-hidden">
-          <div className="flex justify-between items-center">
-            <div className="h-4 w-32 rounded bg-white/[0.08] relative overflow-hidden">
+    <div className="w-full flex flex-col gap-6 select-none" aria-busy="true">
+      {/* Top Sync Status & Location Header Skeleton */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pt-2 pb-2">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <div className="w-32 h-4 rounded-full bg-surface-container-high/80 relative overflow-hidden">
               {shimmer}
             </div>
-            <div className="h-3 w-20 rounded bg-white/[0.04] relative overflow-hidden">
+            <div className="w-16 h-4 rounded-full bg-surface-container-high/60 relative overflow-hidden">
               {shimmer}
             </div>
           </div>
-          <div className="flex items-center gap-3 overflow-hidden pt-2">
-            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="min-w-[72px] h-28 rounded-2xl bg-white/[0.04] border border-white/[0.06] relative overflow-hidden flex flex-col items-center justify-between py-3"
-              >
-                {shimmer}
-                <div className="w-8 h-3 rounded bg-white/[0.08]" />
-                <div className="w-6 h-6 rounded-full bg-white/[0.06]" />
-                <div className="w-7 h-4 rounded bg-white/[0.08]" />
-              </div>
-            ))}
+          <div className="w-64 md:w-80 h-10 rounded-xl bg-surface-container-high relative overflow-hidden mt-1">
+            {shimmer}
           </div>
         </div>
-
-        <div className="lg:col-span-4 apple-bento rounded-3xl p-6 h-60 flex flex-col justify-between relative overflow-hidden">
-          <div className="flex justify-between items-center">
-            <div className="h-4 w-36 rounded bg-white/[0.08] relative overflow-hidden">
-              {shimmer}
-            </div>
-            <div className="h-3 w-16 rounded bg-white/[0.04] relative overflow-hidden">
-              {shimmer}
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="w-28 h-8 rounded-lg bg-surface-container-high/70 relative overflow-hidden">
+            {shimmer}
           </div>
-          <div className="w-full h-36 rounded-2xl bg-white/[0.04] border border-white/[0.06] relative overflow-hidden">
+          <div className="w-24 h-8 rounded-lg bg-surface-container-high/70 relative overflow-hidden">
             {shimmer}
           </div>
         </div>
       </div>
 
-      {/* Row 2: 10-day Forecast (4 Cols) + 6 Core Metrics Bento (8 Cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-4 apple-bento rounded-3xl p-6 h-[440px] flex flex-col gap-4 relative overflow-hidden">
-          <div className="h-4 w-32 rounded bg-white/[0.08] relative overflow-hidden">
+      {/* Hero Temperature Card */}
+      <div className="relative overflow-hidden rounded-2xl bg-surface-container-low/70 backdrop-blur-xl p-6 sm:p-8 shadow-xl flex flex-col justify-between min-h-[260px] border border-white/[0.04]">
+        {shimmer}
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <div className="w-28 h-4 rounded bg-surface-container-highest/60 relative overflow-hidden">
+              {shimmer}
+            </div>
+            <div className="w-56 h-7 rounded-lg bg-surface-container-high relative overflow-hidden mt-2">
+              {shimmer}
+            </div>
+          </div>
+          <div className="w-14 h-14 rounded-2xl bg-surface-container-high/90 relative overflow-hidden shadow-sm">
             {shimmer}
           </div>
-          <div className="flex-1 flex flex-col justify-between py-1">
-            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+        </div>
+
+        <div className="flex items-baseline gap-4 my-4">
+          <div className="w-48 h-20 rounded-2xl bg-surface-container-high relative overflow-hidden shadow-inner">
+            {shimmer}
+          </div>
+          <div className="space-y-2">
+            <div className="w-36 h-4 rounded bg-surface-container-highest/60 relative overflow-hidden">
+              {shimmer}
+            </div>
+            <div className="w-48 h-4 rounded bg-surface-container-high/80 relative overflow-hidden">
+              {shimmer}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-6 pt-2">
+          <div className="w-32 h-6 rounded-lg bg-surface-container-high relative overflow-hidden">
+            {shimmer}
+          </div>
+          <div className="w-36 h-6 rounded-lg bg-surface-container-high relative overflow-hidden">
+            {shimmer}
+          </div>
+          <div className="w-28 h-6 rounded-lg bg-surface-container-high relative overflow-hidden">
+            {shimmer}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 1: Hourly Forecast (2 Cols) + Doppler Radar (2 Cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-surface-container-low/70 backdrop-blur-xl p-5 shadow-xl border border-white/[0.04]">
+          {shimmer}
+          <div className="flex items-center justify-between pb-4">
+            <div className="w-36 h-4 rounded bg-surface-container-high relative overflow-hidden">
+              {shimmer}
+            </div>
+            <div className="w-20 h-4 rounded bg-surface-container-high/60 relative overflow-hidden">
+              {shimmer}
+            </div>
+          </div>
+          <div className="flex items-center gap-3 overflow-hidden pt-1">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
-                className="h-7 w-full rounded-lg bg-white/[0.03] relative overflow-hidden flex items-center px-2"
+                className="flex-shrink-0 w-20 py-4 px-2 rounded-xl bg-surface-container/60 flex flex-col items-center gap-2 relative overflow-hidden"
               >
+                {shimmer}
+                <div className="w-10 h-3 rounded bg-surface-container-highest/80" />
+                <div className="w-7 h-7 rounded-full bg-surface-container-high" />
+                <div className="w-8 h-4 rounded bg-surface-container-highest" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-surface-container-low/70 backdrop-blur-xl p-5 shadow-xl border border-white/[0.04]">
+          {shimmer}
+          <div className="flex items-center justify-between pb-3">
+            <div className="w-40 h-4 rounded bg-surface-container-high relative overflow-hidden">
+              {shimmer}
+            </div>
+            <div className="w-16 h-4 rounded bg-surface-container-high/60 relative overflow-hidden">
+              {shimmer}
+            </div>
+          </div>
+          <div className="w-full h-32 rounded-xl bg-surface-container-high/60 relative overflow-hidden">
+            {shimmer}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: 10-day Forecast (2 Cols) + 2 Metric Cards (2 Cols) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-surface-container-low/70 backdrop-blur-xl p-5 shadow-xl border border-white/[0.04]">
+          {shimmer}
+          <div className="w-36 h-4 rounded bg-surface-container-high relative overflow-hidden mb-4">
+            {shimmer}
+          </div>
+          <div className="space-y-3">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-6 w-full rounded bg-surface-container/60 relative overflow-hidden">
                 {shimmer}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className="apple-bento rounded-3xl p-6 h-[210px] flex flex-col justify-between relative overflow-hidden"
-            >
-              {shimmer}
-              <div className="flex justify-between items-center">
-                <div className="h-4 w-24 rounded bg-white/[0.08]" />
-                <div className="h-3 w-16 rounded bg-white/[0.04]" />
-              </div>
-              <div className="h-10 w-28 rounded-xl bg-white/[0.08]" />
-              <div className="h-3 w-48 rounded bg-white/[0.04]" />
-            </div>
-          ))}
+        <div className="relative overflow-hidden rounded-2xl bg-surface-container-low/70 backdrop-blur-xl p-5 shadow-xl border border-white/[0.04]">
+          {shimmer}
+          <div className="w-24 h-4 rounded bg-surface-container-high relative overflow-hidden mb-3">
+            {shimmer}
+          </div>
+          <div className="w-28 h-10 rounded bg-surface-container-high relative overflow-hidden mb-2">
+            {shimmer}
+          </div>
+          <div className="w-full h-8 rounded bg-surface-container/60 relative overflow-hidden">
+            {shimmer}
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl bg-surface-container-low/70 backdrop-blur-xl p-5 shadow-xl border border-white/[0.04]">
+          {shimmer}
+          <div className="w-24 h-4 rounded bg-surface-container-high relative overflow-hidden mb-3">
+            {shimmer}
+          </div>
+          <div className="w-28 h-10 rounded bg-surface-container-high relative overflow-hidden mb-2">
+            {shimmer}
+          </div>
+          <div className="w-full h-8 rounded bg-surface-container/60 relative overflow-hidden">
+            {shimmer}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 3: Developer Terminal Skeleton */}
+      <div className="relative overflow-hidden rounded-2xl bg-surface-container-lowest p-5 md:p-6 shadow-md border border-white/[0.04] space-y-4">
+        {shimmer}
+        <div className="flex items-center justify-between">
+          <div className="w-48 h-5 rounded bg-surface-container-high relative overflow-hidden">
+            {shimmer}
+          </div>
+          <div className="w-28 h-4 rounded bg-surface-container-high/60 relative overflow-hidden">
+            {shimmer}
+          </div>
+        </div>
+        <div className="w-full h-24 rounded-xl bg-surface-container-low relative overflow-hidden">
+          {shimmer}
         </div>
       </div>
     </div>

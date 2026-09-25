@@ -11,25 +11,49 @@ interface WeatherSearchModalProps {
 
 const RECENT_CHIPS = [
   { label: "Rudrapur, IN", city: "Rudrapur", temp: "23°" },
-  { label: "Delhi, IN", city: "Delhi", temp: "28°" },
-  { label: "London, UK", city: "London", temp: "15°" },
+  { label: "London, UK", city: "London", temp: "11°" },
+  { label: "San Francisco, CA", city: "San Francisco", temp: "15°" },
   { label: "Tokyo, JP", city: "Tokyo", temp: "18°" },
-  { label: "New York, US", city: "New York", temp: "20°" },
-  { label: "Bengaluru, IN", city: "Bengaluru", temp: "24°" },
+  { label: "Delhi, IN", city: "Delhi", temp: "28°" },
 ];
 
-const DEFAULT_SUGGESTIONS: Array<{
-  city: string;
-  region: string;
-  temp: string;
-  icon: string;
-}> = [
-  { city: "Rudrapur", region: "Uttarakhand · India", temp: "23°", icon: "wb_sunny" },
-  { city: "Delhi", region: "NCR · India", temp: "28°", icon: "wb_twilight" },
-  { city: "London", region: "Greater London · United Kingdom", temp: "15°", icon: "cloud" },
-  { city: "Tokyo", region: "Kanto · Japan", temp: "18°", icon: "rainy" },
-  { city: "Mumbai", region: "Maharashtra · India", temp: "30°", icon: "wb_sunny" },
-  { city: "New York", region: "New York · United States", temp: "20°", icon: "partly_cloudy_day" },
+const DEFAULT_SUGGESTIONS = [
+  {
+    name: "Tokyo",
+    code: "JP",
+    condition: "Light Rain",
+    meta: "18:42 JST • 88% precip",
+    temp: "14°",
+    highLow: "H: 16° L: 12°",
+    icon: "rainy",
+  },
+  {
+    name: "Tokushima",
+    code: "JP",
+    condition: "Cloudy",
+    meta: "18:42 JST • Wind 11 km/h",
+    temp: "16°",
+    highLow: "H: 17° L: 13°",
+    icon: "cloud",
+  },
+  {
+    name: "Tokat",
+    code: "TR",
+    condition: "Clear Sky",
+    meta: "12:42 TRT • UV 4 Moderate",
+    temp: "9°",
+    highLow: "H: 11° L: 4°",
+    icon: "wb_sunny",
+  },
+  {
+    name: "Toledo, Ohio",
+    code: "US",
+    condition: "Sunny",
+    meta: "05:42 EDT • Dew 10°",
+    temp: "21°",
+    highLow: "H: 26° L: 14°",
+    icon: "wb_sunny",
+  },
 ];
 
 export function WeatherSearchModal({
@@ -132,7 +156,7 @@ export function WeatherSearchModal({
       if (suggestions.length > 0 && selectedIndex >= 0 && suggestions[selectedIndex]) {
         handleSelect(suggestions[selectedIndex].name);
       } else if (suggestions.length === 0 && selectedIndex >= 0 && DEFAULT_SUGGESTIONS[selectedIndex]) {
-        handleSelect(DEFAULT_SUGGESTIONS[selectedIndex].city);
+        handleSelect(DEFAULT_SUGGESTIONS[selectedIndex].name);
       } else if (query.trim()) {
         handleSelect(query.trim());
       }
@@ -143,7 +167,7 @@ export function WeatherSearchModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-start justify-center pt-16 sm:pt-24 px-4 transition-all duration-200"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 pb-8 bg-surface-container-lowest/80 backdrop-blur-md transition-all duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
@@ -153,11 +177,11 @@ export function WeatherSearchModal({
     >
       <div
         ref={modalBoxRef}
-        className="w-full max-w-xl rounded-2xl bg-[#0f172a]/95 border border-white/15 shadow-2xl overflow-hidden flex flex-col transform transition-transform duration-200"
+        className="w-full max-w-2xl bg-surface-container-high/95 backdrop-blur-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-white/10 transition-all transform animate-[fade-in_0.15s_ease-out]"
       >
-        {/* Search Input Bar */}
-        <div className="flex items-center px-4 py-3.5 bg-white/[0.04] gap-3 border-b border-white/10">
-          <span className="material-symbols-outlined text-sky-400 text-[22px] shrink-0">
+        {/* Input Header Strip */}
+        <div className="relative flex items-center px-4 sm:px-6 py-4 bg-surface-container-highest/50 gap-3 border-b border-white/[0.06]">
+          <span className="material-symbols-outlined text-primary text-[22px] shrink-0">
             search
           </span>
           <input
@@ -175,12 +199,12 @@ export function WeatherSearchModal({
               }
             }}
             onKeyDown={handleInputKeyDown}
-            placeholder="Search city, district, or airport (e.g. Rudrapur, Tokyo)..."
-            className="bg-transparent border-0 outline-none text-white placeholder:text-slate-500 text-sm w-full focus:ring-0 font-medium"
+            placeholder="Search city, airport, or coordinates..."
+            className="bg-transparent border-0 outline-none text-on-surface placeholder:text-outline font-display text-base w-full focus:ring-0 font-medium"
           />
 
           {isSearching && (
-            <div className="animate-spin text-sky-400 shrink-0">
+            <div className="animate-spin text-primary shrink-0">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path
@@ -193,7 +217,7 @@ export function WeatherSearchModal({
           )}
 
           {suggestions.length > 0 && (
-            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/20 text-sky-400 font-mono text-[11px] shrink-0">
+            <span className="inline-flex items-center px-2 py-0.5 rounded bg-surface-container-low text-primary font-mono text-[11px] shrink-0">
               {suggestions.length} match{suggestions.length > 1 ? "es" : ""}
             </span>
           )}
@@ -206,135 +230,183 @@ export function WeatherSearchModal({
                 setSuggestions([]);
                 inputRef.current?.focus();
               }}
-              className="p-1 text-slate-400 hover:text-white rounded-md transition-colors shrink-0"
+              className="w-7 h-7 rounded-lg bg-surface-container hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors shrink-0 cursor-pointer"
               aria-label="Clear input"
             >
-              <span className="material-symbols-outlined text-[18px]">close</span>
+              <span className="material-symbols-outlined text-[16px]">close</span>
             </button>
           )}
 
           <kbd
             onClick={handleClose}
-            className="px-1.5 py-0.5 rounded bg-white/10 text-slate-400 font-mono text-[10px] cursor-pointer hover:bg-white/20 transition-colors shrink-0"
+            className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-mono text-[10px] cursor-pointer hover:bg-surface-bright hover:text-on-surface transition-colors shrink-0"
           >
             ESC
           </kbd>
         </div>
 
-        {/* Quick Recent Locations Ribbon */}
-        <div className="px-4 py-2.5 bg-white/[0.02] border-b border-white/[0.06] flex items-center gap-2 overflow-x-auto text-xs scrollbar-none">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[13px] text-sky-400">history</span>
-            Quick
+        {/* Quick Telemetry & Recent Searches Filter Row */}
+        <div className="px-4 sm:px-6 py-2.5 bg-surface-container-low/70 flex flex-wrap items-center gap-2 border-b border-white/[0.04]">
+          <span className="text-[11px] font-semibold text-outline uppercase tracking-wider shrink-0 flex items-center gap-1">
+            <span className="material-symbols-outlined text-[13px] text-primary">history</span>
+            Recent
           </span>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-1.5 overflow-hidden">
             {RECENT_CHIPS.map((chip) => (
               <button
                 key={chip.city}
                 type="button"
                 onClick={() => handleSelect(chip.city)}
-                className="group flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.1] border border-white/[0.06] transition-colors cursor-pointer"
+                className="group flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container hover:bg-surface-container-highest transition-colors cursor-pointer"
               >
-                <span className="text-slate-300 group-hover:text-sky-300 font-medium text-[11px]">
+                <span className="text-on-surface-variant group-hover:text-primary font-medium text-[11px]">
                   {chip.label}
                 </span>
-                <span className="text-slate-400 text-[10px]">{chip.temp}</span>
+                <span className="text-outline group-hover:text-on-surface-variant text-[10px]">
+                  {chip.temp}
+                </span>
               </button>
             ))}
           </div>
         </div>
 
         {/* Results List */}
-        <div className="p-2 flex flex-col gap-1 max-h-80 overflow-y-auto">
+        <div className="p-3 flex flex-col gap-1 max-h-80 overflow-y-auto">
           {suggestions.length > 0 ? (
-            <>
-              <div className="px-3 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Matching Locations ({suggestions.length})
-              </div>
-              {suggestions.map((item, index) => {
-                const isSelected = index === selectedIndex;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => handleSelect(item.name)}
-                    onMouseEnter={() => setSelectedIndex(index)}
-                    className={`flex items-center justify-between p-3 rounded-xl transition-colors text-left group cursor-pointer ${
-                      isSelected ? "bg-white/[0.08]" : "hover:bg-white/[0.06]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-sky-400 text-[18px]">
-                          location_on
+            suggestions.map((item, index) => {
+              const isSelected = index === selectedIndex;
+              const countryCode = item.country
+                ? item.country.slice(0, 2).toUpperCase()
+                : "IN";
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleSelect(item.name)}
+                  onMouseEnter={() => setSelectedIndex(index)}
+                  className={`flex items-center justify-between p-3 rounded-xl transition-all text-left group cursor-pointer ${
+                    isSelected
+                      ? "bg-surface-container-highest border border-primary/20 shadow-sm"
+                      : "hover:bg-surface-container/60"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+                      <span className="material-symbols-outlined text-[20px]">
+                        location_on
+                      </span>
+                    </div>
+                    <div className="truncate">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-semibold text-on-surface group-hover:text-primary">
+                          {item.name}
+                        </span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-surface-container-highest text-outline uppercase font-mono">
+                          {countryCode}
                         </span>
                       </div>
-                      <div className="truncate">
-                        <div className="text-sm font-semibold text-white group-hover:text-sky-300">
-                          {item.name}
-                        </div>
-                        <div className="text-xs text-slate-400 truncate">
-                          {[item.region, item.country].filter(Boolean).join(" · ")}
-                        </div>
+                      <div className="text-xs text-on-surface-variant truncate mt-0.5">
+                        {[item.region, item.country].filter(Boolean).join(" · ")}
+                        {item.latitude && item.longitude ? ` • ${item.latitude.toFixed(2)}°N, ${item.longitude.toFixed(2)}°E` : ""}
                       </div>
                     </div>
-                    <span className="text-xs font-mono text-slate-400 hidden sm:inline-block">
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-mono text-outline hidden sm:inline-block">
                       Select ↵
                     </span>
-                  </button>
-                );
-              })}
-            </>
+                    <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[20px]">
+                      arrow_forward
+                    </span>
+                  </div>
+                </button>
+              );
+            })
           ) : query.trim().length >= 2 && !isSearching ? (
-            <div className="px-4 py-8 text-center text-slate-400 text-sm">
-              <span className="material-symbols-outlined text-3xl text-slate-500 mb-2 block">
+            <div className="px-4 py-8 text-center text-on-surface-variant text-sm">
+              <span className="material-symbols-outlined text-3xl text-outline mb-2 block">
                 search_off
               </span>
-              No matching locations found for &quot;{query}&quot;. Press Enter to query anyway.
+              No matching locations found for &quot;{query}&quot;. Press Enter to query directly.
             </div>
           ) : (
-            <>
-              <div className="px-3 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Suggested Observatories
-              </div>
-              {DEFAULT_SUGGESTIONS.map((item, index) => {
-                const isSelected = index === selectedIndex;
-                return (
-                  <button
-                    key={item.city}
-                    type="button"
-                    onClick={() => handleSelect(item.city)}
-                    onMouseEnter={() => setSelectedIndex(index)}
-                    className={`flex items-center justify-between p-3 rounded-xl transition-colors text-left group cursor-pointer ${
-                      isSelected ? "bg-white/[0.08]" : "hover:bg-white/[0.06]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-sky-400 text-[18px]">
-                          location_on
-                        </span>
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-white group-hover:text-sky-300">
-                          {item.city}
-                        </div>
-                        <div className="text-xs text-slate-400">{item.region}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-amber-400 text-[18px]">
+            DEFAULT_SUGGESTIONS.map((item, index) => {
+              const isSelected = index === selectedIndex;
+              return (
+                <button
+                  key={item.name}
+                  type="button"
+                  onClick={() => handleSelect(item.name)}
+                  onMouseEnter={() => setSelectedIndex(index)}
+                  className={`flex items-center justify-between p-3 rounded-xl transition-all text-left group cursor-pointer ${
+                    isSelected
+                      ? "bg-surface-container-highest border border-primary/20 shadow-sm"
+                      : "hover:bg-surface-container/60"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+                      <span className="material-symbols-outlined text-[20px]">
                         {item.icon}
                       </span>
-                      <span className="text-sm font-semibold text-white font-mono">
-                        {item.temp}
-                      </span>
                     </div>
-                  </button>
-                );
-              })}
-            </>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-semibold text-on-surface group-hover:text-primary">
+                          {item.name}
+                        </span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-surface-container-highest text-outline uppercase font-mono">
+                          {item.code}
+                        </span>
+                      </div>
+                      <div className="text-xs text-on-surface-variant mt-0.5">
+                        {item.condition} • {item.meta}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-on-surface font-mono">{item.temp}</div>
+                      <div className="text-[10px] text-outline font-mono">{item.highLow}</div>
+                    </div>
+                    <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[20px]">
+                      arrow_forward
+                    </span>
+                  </div>
+                </button>
+              );
+            })
           )}
+        </div>
+
+        {/* Global Synoptic Banner */}
+        <div className="px-4 sm:px-6 py-3 bg-surface-container-low/90 flex items-center justify-between border-t border-white/[0.06]">
+          <div className="flex items-center gap-2 text-xs text-on-surface-variant">
+            <span className="material-symbols-outlined text-[18px] text-primary">map</span>
+            <span>Global Synoptic Layer · Explore interactive precipitation &amp; thermal vectors</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleSelect(query.trim() || "Rudrapur")}
+            className="text-xs font-semibold text-primary hover:text-white flex items-center gap-0.5 cursor-pointer"
+          >
+            <span>Open Radar</span>
+            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </button>
+        </div>
+
+        {/* Keyboard navigation bar */}
+        <div className="px-4 sm:px-6 py-2 bg-surface-container-lowest flex items-center justify-between text-[11px] text-outline font-mono border-t border-white/[0.04]">
+          <div className="flex items-center gap-3">
+            <span>↑ ↓ Navigate</span>
+            <span>↵ Select</span>
+            <span>ESC Close</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-primary">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span>GEMS SATELLITE LINK 904</span>
+          </div>
         </div>
       </div>
     </div>

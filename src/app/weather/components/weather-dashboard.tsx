@@ -12,8 +12,6 @@ import { DeveloperSection } from "./developer-section";
 import { WeatherSkeleton } from "./weather-skeleton";
 import { WeatherErrorConsole } from "./weather-error";
 
-type AtmosphereMode = "auto" | "clear" | "rain" | "night";
-
 export function WeatherDashboard() {
   const [data, setData] = useState<PublicWeatherSuccessResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -21,7 +19,7 @@ export function WeatherDashboard() {
   const [activeCity, setActiveCity] = useState<string>("Rudrapur");
   const [isMetric, setIsMetric] = useState<boolean>(true);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
-  const [atmosphere, setAtmosphere] = useState<AtmosphereMode>("auto");
+  const [activeNavTab, setActiveNavTab] = useState<string>("overview");
 
   const hasMounted = useRef(false);
 
@@ -47,7 +45,7 @@ export function WeatherDashboard() {
         const code = json.error.code;
         if (code === "INVALID_CITY" || code === "INVALID_QUERY") {
           setErrorMessage(
-            `Unable to locate "${city || "requested city"}". Please verify the spelling or select a major coordinate.`
+            `Unable to resolve coordinates for "${city || "requested location"}". Verify the spelling or select a calibrated station node.`
           );
         } else if (code === "RATE_LIMIT_EXCEEDED") {
           setErrorMessage("Rate limit reached. Please wait a moment and try again.");
@@ -72,194 +70,103 @@ export function WeatherDashboard() {
     }
   }, [fetchWeather]);
 
-  // Derive atmospheric background colors
-  const activeMode: "clear" | "rain" | "night" = (() => {
-    if (atmosphere !== "auto") return atmosphere;
-    if (!data) return "clear";
-    const desc = data.weather.description.toLowerCase();
-    if (
-      desc.includes("rain") ||
-      desc.includes("drizzle") ||
-      desc.includes("shower") ||
-      desc.includes("storm")
-    ) {
-      return "rain";
-    }
-    if (desc.includes("night")) {
-      return "night";
-    }
-    return "clear";
-  })();
-
-  const skyGlow1 = (() => {
-    if (activeMode === "rain") {
-      return "from-blue-700/25 to-slate-800/20";
-    }
-    if (activeMode === "night") {
-      return "from-indigo-950/40 to-slate-900/30";
-    }
-    return "from-sky-500/15 to-blue-600/5";
-  })();
-
-  const skyGlow2 = (() => {
-    if (activeMode === "rain") {
-      return "from-cyan-600/20 to-blue-900/15";
-    }
-    if (activeMode === "night") {
-      return "from-purple-950/30 to-blue-950/20";
-    }
-    return "from-indigo-500/10 to-amber-500/5";
-  })();
-
   return (
-    <div className="min-h-screen flex flex-col relative text-slate-100 selection:bg-sky-500/30 selection:text-sky-200">
-      {/* Atmospheric Sky Gradient Backdrop (Apple Weather Natural Lighting) */}
+    <div className="min-h-screen flex flex-col bg-surface-container-lowest text-on-surface antialiased relative overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+      {/* Ambient Atmospheric Backdrop Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" id="sky-backdrop">
-        <div
-          className={`absolute -top-32 left-1/4 w-[750px] h-[550px] rounded-full bg-gradient-to-b ${skyGlow1} blur-[120px] sky-glow-primary transition-all duration-1000`}
-        />
-        <div
-          className={`absolute top-96 -right-20 w-[600px] h-[500px] rounded-full bg-gradient-to-b ${skyGlow2} blur-[140px] sky-glow-secondary transition-all duration-1000`}
-        />
-
-        {/* Rain Pattern Layer (Monsoon & Rain State from Stitch) */}
-        {activeMode === "rain" && (
-          <svg className="absolute inset-0 w-full h-full opacity-25" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern
-                id="rain-drops"
-                width="30"
-                height="40"
-                patternUnits="userSpaceOnUse"
-                patternTransform="rotate(18)"
-              >
-                <line
-                  x1="2"
-                  y1="2"
-                  x2="2"
-                  y2="16"
-                  stroke="#8ed5ff"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                  opacity="0.6"
-                />
-                <line
-                  x1="18"
-                  y1="18"
-                  x2="18"
-                  y2="34"
-                  stroke="#8ed5ff"
-                  strokeWidth="0.8"
-                  strokeLinecap="round"
-                  opacity="0.4"
-                />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#rain-drops)" />
-          </svg>
-        )}
+        <div className="absolute -top-[180px] left-1/2 -translate-x-1/2 w-[980px] h-[480px] bg-primary-container/10 blur-[130px] rounded-full sky-glow-primary" />
+        <div className="absolute top-[380px] -left-[200px] w-[520px] h-[520px] bg-secondary-container/15 blur-[140px] rounded-full sky-glow-secondary" />
+        <div className="absolute bottom-[100px] right-[-100px] w-[600px] h-[600px] bg-primary/5 blur-[160px] rounded-full" />
       </div>
 
-      {/* Header Navigation */}
-      <header className="sticky top-0 z-40 bg-[#0b111e]/75 backdrop-blur-2xl border-b border-white/[0.06] transition-all">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      {/* Header Navigation (80px height matching reference screenshot) */}
+      <header className="sticky top-0 z-40 bg-surface-container-lowest/80 backdrop-blur-2xl border-b border-white/[0.04] shadow-[0_1px_8px_rgba(0,0,0,0.4)] transition-all">
+        <div className="h-20 max-w-[1240px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
           {/* Brand */}
-          <div className="flex items-center gap-3 shrink-0">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-400 to-blue-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
-                <span className="material-symbols-outlined text-white text-[19px]">
-                  cloud
+          <div className="flex items-center gap-6 shrink-0">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors shadow-[0_0_16px_rgba(56,189,248,0.15)]">
+                <span className="material-symbols-outlined text-[24px]">cloud</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-display text-[17px] font-semibold text-on-surface tracking-tight group-hover:text-primary transition-colors">
+                  Maybesurya Weather
+                </span>
+                <span className="text-[11px] font-bold text-primary uppercase tracking-widest">
+                  Atmospheric Core
                 </span>
               </div>
-              <span className="font-display font-semibold text-[17px] tracking-tight text-white">
-                Maybesurya <span className="text-sky-400 font-normal">Weather</span>
-              </span>
             </Link>
+
+            {/* Pill Navigation Menu */}
+            <nav className="hidden lg:flex items-center bg-surface-container-low/80 p-1 rounded-xl border border-white/[0.04]">
+              <button
+                type="button"
+                onClick={() => setActiveNavTab("overview")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activeNavTab === "overview"
+                    ? "bg-surface-container-highest text-on-surface shadow-inner"
+                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
+                }`}
+              >
+                Live Overview
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer"
+              >
+                Radar &amp; Wind
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer"
+              >
+                Air Quality
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer"
+              >
+                Alerts
+              </button>
+            </nav>
           </div>
 
-          {/* Quick Search Bar (Command Palette Trigger) */}
-          <div className="flex-1 max-w-md hidden sm:block">
+          {/* Search Trigger Bar */}
+          <div className="hidden md:flex items-center flex-1 max-w-md mx-4">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.08] text-slate-400 hover:text-slate-200 transition-all text-sm group cursor-pointer"
+              className="w-full flex items-center justify-between pl-3 pr-2 py-2 bg-surface-container-high/60 hover:bg-surface-container-high text-on-surface rounded-xl transition-all border border-white/[0.04] text-xs group cursor-pointer"
             >
-              <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-[18px] text-slate-400 group-hover:text-sky-400 transition-colors">
+              <div className="flex items-center gap-2.5 text-on-surface-variant">
+                <span className="material-symbols-outlined text-[18px] text-primary group-hover:scale-110 transition-transform">
                   search
                 </span>
-                <span>Search city or airport...</span>
+                <span className="truncate">
+                  {data?.location?.city ? `${data.location.city}, ${data.location.country}` : "Search city or airport..."}
+                </span>
               </div>
-              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/10 font-mono text-[10px] text-slate-400">
+              <kbd className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-mono text-[10px]">
                 ⌘K
               </kbd>
             </button>
           </div>
 
-          {/* Right Controls: Atmosphere Switcher & Units Toggle */}
+          {/* Right Action Controls */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Weather Atmosphere Preview Tabs */}
-            <div className="flex items-center p-1 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs">
-              <button
-                type="button"
-                onClick={() => setAtmosphere("clear")}
-                className={`weather-tab px-2.5 py-1 rounded-lg font-medium transition-all flex items-center gap-1 cursor-pointer ${
-                  activeMode === "clear"
-                    ? "text-white bg-white/10 font-semibold"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                <span
-                  className="material-symbols-outlined text-[15px] text-amber-400"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  wb_sunny
-                </span>
-                <span className="hidden sm:inline">Clear</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setAtmosphere("rain")}
-                className={`weather-tab px-2.5 py-1 rounded-lg font-medium transition-all flex items-center gap-1 cursor-pointer ${
-                  activeMode === "rain"
-                    ? "text-white bg-white/10 font-semibold"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[15px] text-sky-400">
-                  rainy
-                </span>
-                <span className="hidden sm:inline">Rain</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setAtmosphere("night")}
-                className={`weather-tab px-2.5 py-1 rounded-lg font-medium transition-all flex items-center gap-1 cursor-pointer ${
-                  activeMode === "night"
-                    ? "text-white bg-white/10 font-semibold"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[15px] text-indigo-400">
-                  bedtime
-                </span>
-                <span className="hidden sm:inline">Night</span>
-              </button>
-            </div>
-
-            <div className="h-4 w-px bg-white/10 hidden md:block" />
-
-            {/* Metric / Imperial Toggle */}
-            <div className="flex items-center p-0.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-xs font-medium">
+            {/* Metric / Imperial Unit Toggle */}
+            <div className="flex items-center bg-surface-container-high/70 p-1 rounded-lg border border-white/[0.04] text-xs font-mono">
               <button
                 type="button"
                 onClick={() => setIsMetric(true)}
-                className={`px-2 py-1 rounded-md transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded font-bold transition-all cursor-pointer ${
                   isMetric
-                    ? "bg-white/10 text-white font-semibold"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-primary-container text-on-primary-container shadow-sm"
+                    : "text-on-surface-variant hover:text-on-surface"
                 }`}
               >
                 °C
@@ -267,10 +174,10 @@ export function WeatherDashboard() {
               <button
                 type="button"
                 onClick={() => setIsMetric(false)}
-                className={`px-2 py-1 rounded-md transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded font-bold transition-all cursor-pointer ${
                   !isMetric
-                    ? "bg-white/10 text-white font-semibold"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-primary-container text-on-primary-container shadow-sm"
+                    : "text-on-surface-variant hover:text-on-surface"
                 }`}
               >
                 °F
@@ -281,30 +188,35 @@ export function WeatherDashboard() {
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="sm:hidden p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white cursor-pointer"
+              className="md:hidden p-2 rounded-xl bg-surface-container-high text-on-surface hover:text-white cursor-pointer"
               aria-label="Search"
             >
               <span className="material-symbols-outlined text-[18px]">search</span>
             </button>
 
-            {/* API Docs Link */}
+            {/* API Docs Button */}
             <a
               href="https://docs.maybesurya.dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden lg:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-semibold transition-colors"
             >
-              <span className="material-symbols-outlined text-[15px] text-sky-400">
-                code
-              </span>
+              <span className="material-symbols-outlined text-[18px]">code</span>
               <span>API Docs</span>
             </a>
+
+            {/* Profile Avatar Circle */}
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm">
+              <span className="material-symbols-outlined text-on-primary text-[18px]">
+                person
+              </span>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content Container */}
-      <main className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 flex-1 relative z-10 flex flex-col gap-8">
+      {/* Main Content Area */}
+      <main className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 pt-6 pb-20 flex-1 relative z-10 flex flex-col gap-6">
         {isLoading && !data ? (
           <WeatherSkeleton />
         ) : errorMessage ? (
@@ -327,41 +239,134 @@ export function WeatherDashboard() {
         ) : null}
       </main>
 
-      {/* Clean Minimal Footer */}
-      <footer className="w-full bg-[#080c16]/90 border-t border-white/[0.06] py-8 text-xs text-slate-400 relative z-10">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div className="flex items-center gap-2">
-            <span className="font-display font-medium text-slate-300">
-              Maybesurya Weather
-            </span>
-            <span className="text-slate-600">·</span>
-            <span>Crafted for clarity, accuracy, and speed.</span>
+      {/* 3-Column Footer matching reference screenshot */}
+      <footer className="relative z-10 w-full bg-surface-container-lowest/90 backdrop-blur-md border-t border-white/[0.04] mt-auto shadow-[0_-1px_12px_rgba(0,0,0,0.5)]">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-10">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8">
+            {/* Col 1: Brand & Live Satellite Feed info */}
+            <div className="space-y-3 md:col-span-2">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-[20px]">cloud</span>
+                </div>
+                <span className="font-display font-semibold text-on-surface tracking-tight text-base">
+                  Maybesurya Weather
+                </span>
+              </div>
+              <p className="text-xs text-on-surface-variant max-w-sm leading-relaxed">
+                High-fidelity atmospheric telemetry engine delivering micro-forecasts, real-time Doppler radar kinematics, and planetary air monitoring.
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <span className="w-2 h-2 rounded-full bg-primary-container animate-pulse" />
+                <span className="text-xs text-on-surface-variant font-mono">
+                  Satellite feed live: Station 904-Omega
+                </span>
+              </div>
+            </div>
+
+            {/* Col 2: Resources */}
+            <div className="flex flex-col gap-2 text-xs">
+              <span className="font-bold text-outline uppercase tracking-wider text-[11px] mb-1">
+                Resources
+              </span>
+              <a
+                href="https://docs.maybesurya.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-on-surface-variant hover:text-primary transition-colors"
+              >
+                Documentation
+              </a>
+              <a
+                href="https://docs.maybesurya.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-on-surface-variant hover:text-primary transition-colors"
+              >
+                API Endpoints
+              </a>
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="text-left text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+              >
+                Observatory Feeds
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="text-left text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+              >
+                Alert Webhooks
+              </button>
+            </div>
+
+            {/* Col 3: Ecosystem */}
+            <div className="flex flex-col gap-2 text-xs">
+              <span className="font-bold text-outline uppercase tracking-wider text-[11px] mb-1">
+                Ecosystem
+              </span>
+              <a
+                href="https://docs.maybesurya.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-on-surface-variant hover:text-primary transition-colors"
+              >
+                Release Notes
+              </a>
+              <a
+                href="https://github.com/maybesurya"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-on-surface-variant hover:text-primary transition-colors"
+              >
+                GitHub Repository
+              </a>
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="text-left text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+              >
+                Telemetry Nodes
+              </button>
+              <a
+                href="https://apis.maybesurya.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-on-surface-variant hover:text-primary transition-colors"
+              >
+                System Status
+              </a>
+            </div>
           </div>
-          <div className="flex items-center gap-5 font-medium">
-            <a
-              href="https://docs.maybesurya.dev"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
-            >
-              Documentation
-            </a>
-            <a
-              href="https://apis.maybesurya.dev"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
-            >
-              APIs
-            </a>
-            <a
-              href="https://github.com/maybesurya"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
-            >
-              GitHub
-            </a>
+
+          {/* Bottom Bar */}
+          <div className="pt-6 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-outline">
+            <span>© 2025 Maybesurya Weather. Crafted with computational precision.</span>
+            <div className="flex items-center gap-6">
+              <a
+                href="https://github.com/maybesurya"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[15px]">terminal</span>
+                <span>GitHub</span>
+              </a>
+              <a
+                href="https://weather.maybesurya.dev/api/weather"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[15px]">api</span>
+                <span>REST APIs</span>
+              </a>
+              <span className="text-on-surface-variant flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[15px]">cloud_sync</span>
+                <span>Telemetry v4.2</span>
+              </span>
+            </div>
           </div>
         </div>
       </footer>
