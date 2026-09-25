@@ -467,12 +467,16 @@ export function WeatherDashboard() {
                 Project &amp; Code
               </span>
               <a
-                href="https://github.com/maybesurya"
+                href="https://github.com/MaybeSurya/Weather-Api"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-on-surface-variant hover:text-primary transition-colors"
+                className="text-on-surface-variant hover:text-primary transition-colors inline-flex items-center gap-2 group/star"
               >
-                GitHub Profile
+                <span>GitHub Repo</span>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-400/10 text-amber-400 text-[10px] font-medium border border-amber-400/20 group-hover/star:bg-amber-400/20 transition-all">
+                  <span>⭐</span>
+                  <span>Leave a star</span>
+                </span>
               </a>
               <a
                 href="https://open-meteo.com"
@@ -520,7 +524,7 @@ export function WeatherDashboard() {
                 <span>GitHub</span>
               </a>
               <a
-                href="https://github.com/MaybeSurya/Weather-Api"
+                href="https://weather.maybesurya.dev/api/weather"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1.5"
