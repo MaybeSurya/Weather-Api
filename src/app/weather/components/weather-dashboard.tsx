@@ -121,34 +121,34 @@ export function WeatherDashboard() {
         <div className="absolute bottom-[100px] right-[-100px] w-[600px] h-[600px] bg-primary/5 blur-[160px] rounded-full" />
       </div>
 
-      {/* Header Navigation (80px height matching reference screenshot) */}
+      {/* Header Navigation (Adaptive height with clean responsive scaling) */}
       <header className="sticky top-0 z-40 bg-surface-container-lowest/80 backdrop-blur-2xl border-b border-white/[0.04] shadow-[0_1px_8px_rgba(0,0,0,0.4)] transition-all">
-        <div className="h-20 max-w-[1240px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
+        <div className="h-16 sm:h-20 max-w-[1240px] 2xl:max-w-[1440px] mx-auto px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4">
           {/* Brand */}
-          <div className="flex items-center gap-6 shrink-0">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors shadow-[0_0_16px_rgba(56,189,248,0.15)]">
+          <div className="flex items-center gap-4 lg:gap-6 min-w-0 shrink">
+            <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group min-w-0" aria-label="MaybeSurya Weather home">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors shadow-[0_0_16px_rgba(56,189,248,0.15)] shrink-0">
                 <WeatherIcon name="cloud" className="w-5 h-5 text-current" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-display text-[17px] font-semibold text-on-surface tracking-tight group-hover:text-primary transition-colors">
+              <div className="flex flex-col min-w-0">
+                <span className="font-display text-[15px] sm:text-[17px] font-semibold text-on-surface tracking-tight group-hover:text-primary transition-colors truncate">
                   MaybeSurya Weather
                 </span>
-                <span className="text-[11px] font-semibold text-primary">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-primary truncate hidden xs:block">
                   Live Weather &amp; Forecasts
                 </span>
               </div>
             </Link>
 
             {/* Pill Navigation Menu */}
-            <nav className="hidden lg:flex items-center bg-surface-container-low/80 p-1 rounded-xl border border-white/[0.04]">
+            <nav className="hidden lg:flex items-center bg-surface-container-low/80 p-1 rounded-xl border border-white/[0.04]" aria-label="Main Navigation">
               <button
                 type="button"
                 onClick={() => {
                   setActiveNavTab("overview");
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:ring-1 focus-visible:ring-primary ${
                   activeNavTab === "overview"
                     ? "bg-surface-container-highest text-on-surface shadow-inner"
                     : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
@@ -162,7 +162,7 @@ export function WeatherDashboard() {
                   setActiveNavTab("hourly");
                   document.getElementById("hourly-forecast")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:ring-1 focus-visible:ring-primary ${
                   activeNavTab === "hourly"
                     ? "bg-surface-container-highest text-on-surface shadow-inner"
                     : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
@@ -176,7 +176,7 @@ export function WeatherDashboard() {
                   setActiveNavTab("air-quality");
                   document.getElementById("air-quality")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:ring-1 focus-visible:ring-primary ${
                   activeNavTab === "air-quality"
                     ? "bg-surface-container-highest text-on-surface shadow-inner"
                     : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
@@ -187,55 +187,60 @@ export function WeatherDashboard() {
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer focus-visible:ring-1 focus-visible:ring-primary"
               >
                 Search Locations
               </button>
             </nav>
           </div>
 
-          {/* Search Trigger Bar */}
-          <div className="hidden md:flex items-center flex-1 max-w-md mx-4">
+          {/* Search Trigger Bar (Desktop / Tablet) */}
+          <div className="hidden md:flex items-center flex-1 max-w-sm lg:max-w-md mx-2 lg:mx-4">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="w-full flex items-center justify-between pl-3 pr-2 py-2 bg-surface-container-high/60 hover:bg-surface-container-high text-on-surface rounded-xl transition-all border border-white/[0.04] text-xs group cursor-pointer"
+              className="w-full flex items-center justify-between pl-3 pr-2 py-2 bg-surface-container-high/60 hover:bg-surface-container-high text-on-surface rounded-xl transition-all border border-white/[0.04] text-xs group cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Open search dialog (Command+K)"
             >
-              <div className="flex items-center gap-2.5 text-on-surface-variant">
-                <WeatherIcon name="search" className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+              <div className="flex items-center gap-2.5 text-on-surface-variant truncate mr-2">
+                <WeatherIcon name="search" className="w-4 h-4 text-primary group-hover:scale-110 transition-transform shrink-0" />
                 <span className="truncate">
                   {data?.location?.city ? `${data.location.city}, ${data.location.country}` : "Search city or airport..."}
                 </span>
               </div>
-              <kbd className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-mono text-[10px]">
+              <kbd className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-mono text-[10px] shrink-0">
                 ⌘K
               </kbd>
             </button>
           </div>
 
           {/* Right Action Controls */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Metric / Imperial Unit Toggle */}
-            <div className="flex items-center bg-surface-container-high/70 p-1 rounded-lg border border-white/[0.04] text-xs font-mono">
+            <div className="flex items-center bg-surface-container-high/70 p-0.5 sm:p-1 rounded-lg border border-white/[0.04] text-[11px] sm:text-xs font-mono" role="group" aria-label="Temperature unit selection">
               <button
                 type="button"
                 onClick={() => setIsMetric(true)}
-                className={`px-2.5 py-1 rounded font-bold transition-all cursor-pointer ${
+                className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded font-bold transition-all cursor-pointer focus-visible:ring-1 focus-visible:ring-primary ${
                   isMetric
                     ? "bg-primary-container text-on-primary-container shadow-sm"
                     : "text-on-surface-variant hover:text-on-surface"
                 }`}
+                aria-pressed={isMetric}
+                title="Display Celsius"
               >
                 °C
               </button>
               <button
                 type="button"
                 onClick={() => setIsMetric(false)}
-                className={`px-2.5 py-1 rounded font-bold transition-all cursor-pointer ${
+                className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded font-bold transition-all cursor-pointer focus-visible:ring-1 focus-visible:ring-primary ${
                   !isMetric
                     ? "bg-primary-container text-on-primary-container shadow-sm"
                     : "text-on-surface-variant hover:text-on-surface"
                 }`}
+                aria-pressed={!isMetric}
+                title="Display Fahrenheit"
               >
                 °F
               </button>
@@ -245,10 +250,11 @@ export function WeatherDashboard() {
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="md:hidden p-2 rounded-xl bg-surface-container-high text-on-surface hover:text-white cursor-pointer"
-              aria-label="Search"
+              className="md:hidden p-2 rounded-xl bg-surface-container-high text-on-surface hover:text-white cursor-pointer active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Search city"
+              title="Search"
             >
-              <WeatherIcon name="search" className="w-4 h-4" />
+              <WeatherIcon name="search" className="w-4 h-4 text-primary" />
             </button>
 
             {/* API Docs Button */}
@@ -256,14 +262,14 @@ export function WeatherDashboard() {
               href="https://docs.maybesurya.dev/weather/overview"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-semibold transition-colors"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-semibold transition-colors focus-visible:ring-1 focus-visible:ring-primary"
             >
               <WeatherIcon name="code" className="w-4 h-4 text-primary" />
               <span>API Docs</span>
             </a>
 
             {/* Profile Avatar Circle */}
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm text-on-primary">
+            <div className="hidden xs:flex w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary items-center justify-center shrink-0 shadow-sm text-on-primary" title="Profile">
               <WeatherIcon name="user" className="w-4 h-4 text-on-primary" />
             </div>
           </div>
@@ -271,7 +277,7 @@ export function WeatherDashboard() {
       </header>
 
       {/* Main Content Area */}
-      <main className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 pt-6 pb-20 flex-1 relative z-10 flex flex-col gap-6">
+      <main className="w-full max-w-[1240px] 2xl:max-w-[1440px] mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 pb-16 sm:pb-20 flex-1 relative z-10 flex flex-col gap-5 sm:gap-6">
         {isLoading && !data ? (
           <WeatherSkeleton />
         ) : errorMessage ? (
@@ -296,12 +302,12 @@ export function WeatherDashboard() {
 
       {/* Enhanced Footer with Animated Watermark & Interactive Controls */}
       <footer className="relative w-full bg-surface-container-lowest/95 backdrop-blur-xl border-t border-white/[0.04] mt-auto shadow-[0_-4px_24px_rgba(0,0,0,0.6)] overflow-hidden">
-        <div className="relative z-10 max-w-[1240px] mx-auto px-4 sm:px-6 pt-10 pb-4">
+        <div className="relative z-10 max-w-[1240px] 2xl:max-w-[1440px] mx-auto px-3.5 sm:px-6 pt-8 sm:pt-10 pb-4">
           {/* Interactive Controls Bar: Quick Cities, Units & Refresh */}
-          <div className="pb-6 mb-8 border-b border-white/[0.04] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 text-xs">
+          <div className="pb-6 mb-8 border-b border-white/[0.04] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 text-xs">
             {/* Quick Cities */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-outline font-medium flex items-center gap-1.5 mr-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="text-outline font-medium flex items-center gap-1.5 mr-1 text-[11px] sm:text-xs">
                 <WeatherIcon name="location_on" className="w-4 h-4 text-primary" />
                 <span>Quick Cities:</span>
               </span>
@@ -315,7 +321,7 @@ export function WeatherDashboard() {
                       fetchWeather(c);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+                    className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 focus-visible:ring-1 focus-visible:ring-primary ${
                       isActive
                         ? "bg-primary text-slate-900 font-bold shadow-md shadow-primary/25 ring-1 ring-primary"
                         : "bg-surface-container hover:bg-surface-container-high text-on-surface hover:text-white"
@@ -329,12 +335,12 @@ export function WeatherDashboard() {
             </div>
 
             {/* Interactive Quick Actions */}
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center justify-between sm:justify-start gap-1.5 sm:gap-2 shrink-0 pt-2 lg:pt-0">
               <button
                 type="button"
                 onClick={() => fetchWeather(activeCity)}
                 disabled={isLoading}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium transition-all cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:ring-1 focus-visible:ring-primary"
                 title="Refresh current city forecast"
               >
                 <WeatherIcon
@@ -347,7 +353,7 @@ export function WeatherDashboard() {
               <button
                 type="button"
                 onClick={() => setIsMetric(!isMetric)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium transition-all cursor-pointer active:scale-95"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium transition-all cursor-pointer active:scale-95 focus-visible:ring-1 focus-visible:ring-primary"
                 title="Switch Temperature Units"
               >
                 <span className="font-bold text-primary font-mono">{isMetric ? "°C" : "°F"}</span>
@@ -357,7 +363,7 @@ export function WeatherDashboard() {
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium transition-all cursor-pointer active:scale-95"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium transition-all cursor-pointer active:scale-95 focus-visible:ring-1 focus-visible:ring-primary"
               >
                 <WeatherIcon name="search" className="w-3.5 h-3.5 text-primary" />
                 <span>Search City</span>
@@ -366,7 +372,8 @@ export function WeatherDashboard() {
               <button
                 type="button"
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-xs font-semibold text-primary hover:text-white transition-all cursor-pointer shadow-sm active:scale-95 ml-1"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-xs font-semibold text-primary hover:text-white transition-all cursor-pointer shadow-sm active:scale-95 focus-visible:ring-1 focus-visible:ring-primary"
+                title="Back to top"
               >
                 <span>Top</span>
                 <WeatherIcon name="arrow_forward" className="w-3.5 h-3.5 -rotate-90" />

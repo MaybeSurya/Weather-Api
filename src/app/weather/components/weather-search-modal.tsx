@@ -182,7 +182,7 @@ export function WeatherSearchModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 pb-8 bg-surface-container-lowest/80 backdrop-blur-md transition-all duration-200"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-2 sm:pt-16 md:pt-24 px-2 sm:px-4 pb-4 sm:pb-8 bg-surface-container-lowest/80 backdrop-blur-md transition-all duration-200 overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
@@ -192,10 +192,10 @@ export function WeatherSearchModal({
     >
       <div
         ref={modalBoxRef}
-        className="w-full max-w-2xl bg-surface-container-high/95 backdrop-blur-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-white/10 transition-all transform animate-[fade-in_0.15s_ease-out]"
+        className="w-full max-w-2xl bg-surface-container-high/95 backdrop-blur-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-white/10 transition-all transform animate-[fade-in_0.15s_ease-out] max-h-[92vh] sm:max-h-[85vh]"
       >
         {/* Input Header Strip */}
-        <div className="relative flex items-center px-4 sm:px-6 py-4 bg-surface-container-highest/50 gap-3 border-b border-white/[0.06]">
+        <div className="relative flex items-center px-3 sm:px-6 py-3.5 sm:py-4 bg-surface-container-highest/50 gap-2.5 sm:gap-3 border-b border-white/[0.06] shrink-0">
           <WeatherIcon name="search" className="w-5 h-5 text-primary shrink-0" />
           <input
             ref={inputRef}
@@ -250,29 +250,37 @@ export function WeatherSearchModal({
             </button>
           )}
 
+          <button
+            type="button"
+            onClick={handleClose}
+            className="sm:hidden px-2 py-1 text-xs font-medium text-primary hover:text-white transition-colors cursor-pointer shrink-0"
+          >
+            Cancel
+          </button>
           <kbd
             onClick={handleClose}
-            className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-mono text-[10px] cursor-pointer hover:bg-surface-bright hover:text-on-surface transition-colors shrink-0"
+            className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-mono text-[10px] cursor-pointer hover:bg-surface-bright hover:text-on-surface transition-colors shrink-0"
+            title="Press Escape to close"
           >
             ESC
           </kbd>
         </div>
 
         {/* Quick Picks & Recent Searches */}
-        <div className="px-4 sm:px-6 py-2.5 bg-surface-container-low/70 flex flex-wrap items-center gap-2 border-b border-white/[0.04]">
+        <div className="px-3 sm:px-6 py-2 sm:py-2.5 bg-surface-container-low/70 flex items-center gap-2 border-b border-white/[0.04] overflow-x-auto no-scrollbar shrink-0">
           <span className="text-[11px] font-semibold text-outline uppercase tracking-wider shrink-0 flex items-center gap-1">
             <WeatherIcon name="history" className="w-3.5 h-3.5 text-primary" />
             Recent
           </span>
-          <div className="flex flex-wrap items-center gap-1.5 overflow-hidden">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
             {RECENT_CHIPS.map((chip) => (
               <button
                 key={chip.city}
                 type="button"
                 onClick={() => handleSelect(chip.city)}
-                className="group flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container hover:bg-surface-container-highest transition-colors cursor-pointer"
+                className="group flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container hover:bg-surface-container-highest transition-colors cursor-pointer shrink-0"
               >
-                <span className="text-on-surface-variant group-hover:text-primary font-medium text-[11px]">
+                <span className="text-on-surface-variant group-hover:text-primary font-medium text-[11px] whitespace-nowrap">
                   {chip.label}
                 </span>
                 <span className="text-outline group-hover:text-on-surface-variant text-[10px]">
@@ -284,7 +292,7 @@ export function WeatherSearchModal({
         </div>
 
         {/* Results List */}
-        <div className="p-3 flex flex-col gap-1 max-h-80 overflow-y-auto">
+        <div className="p-2 sm:p-3 flex flex-col gap-1 max-h-[50vh] sm:max-h-80 overflow-y-auto overscroll-contain">
           {suggestions.length > 0 ? (
             suggestions.map((item, index) => {
               const isSelected = index === selectedIndex;
@@ -408,8 +416,8 @@ export function WeatherSearchModal({
         </div>
 
         {/* Friendly guidance bar */}
-        <div className="px-4 sm:px-6 py-2.5 bg-surface-container-lowest flex flex-wrap items-center justify-between gap-3 text-xs text-on-surface-variant border-t border-white/[0.04]">
-          <div className="flex items-center gap-2 text-[11px]">
+        <div className="px-3 sm:px-6 py-2.5 bg-surface-container-lowest flex items-center justify-between gap-3 text-xs text-on-surface-variant border-t border-white/[0.04] shrink-0">
+          <div className="hidden sm:flex items-center gap-2 text-[11px]">
             <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-medium">↑</span>
             <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-medium">↓</span>
             <span>Arrow keys to move</span>
@@ -420,7 +428,10 @@ export function WeatherSearchModal({
             <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-medium">Esc</span>
             <span>Exit</span>
           </div>
-          <div className="flex items-center gap-1.5 text-emerald-400 font-medium text-xs">
+          <span className="text-[11px] text-outline sm:hidden truncate">
+            Tap any city to view live forecast
+          </span>
+          <div className="flex items-center gap-1.5 text-emerald-400 font-medium text-xs shrink-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>Live search ready</span>
           </div>

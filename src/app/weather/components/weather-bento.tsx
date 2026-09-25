@@ -440,7 +440,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
       )}
 
       {/* 2. Hero Weather Display with GSAP Animated Motion Scene */}
-      <div className="relative rounded-2xl overflow-hidden bg-surface-container-low shadow-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-end justify-between gap-6 border border-white/[0.04] min-h-[220px]">
+      <div className="relative rounded-2xl overflow-hidden bg-surface-container-low shadow-xl p-4 xs:p-5 sm:p-8 flex flex-col lg:flex-row lg:items-end justify-between gap-6 border border-white/[0.04] min-h-[220px]">
         {/* Dynamic GSAP Motion Scene Layer */}
         <WeatherMotionScene condition={weather.description} isNight={isNight} />
 
@@ -449,7 +449,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
           <button
             type="button"
             onClick={onOpenSearch}
-            className="flex items-center gap-2 group text-left cursor-pointer transition-transform hover:translate-x-0.5"
+            className="flex flex-wrap items-center gap-2 group text-left cursor-pointer transition-transform hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded-lg"
             aria-label="Change city"
           >
             <WeatherIcon name="location_on" className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
@@ -462,15 +462,15 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
           </button>
 
           {/* Temperature & Description */}
-          <div className="flex items-baseline gap-4 pt-1">
-            <span className="font-display text-8xl md:text-9xl font-light text-on-surface tracking-tighter leading-none select-none">
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 pt-1">
+            <span className="font-display text-6xl xs:text-7xl sm:text-8xl md:text-9xl font-light text-on-surface tracking-tighter leading-none select-none">
               {formatTemp(currentTempC, isMetric)}
             </span>
             <div className="flex flex-col">
-              <span className="font-display text-2xl sm:text-3xl text-primary font-medium">
+              <span className="font-display text-xl sm:text-2xl md:text-3xl text-primary font-medium">
                 {weather.description}
               </span>
-              <span className="text-sm text-on-surface-variant font-medium mt-1">
+              <span className="text-xs sm:text-sm text-on-surface-variant font-medium mt-1">
                 Feels like {formatTemp(feelsLikeC, isMetric)} · High: {formatTemp(highTempC, isMetric)} · Low: {formatTemp(lowTempC, isMetric)}
               </span>
             </div>
@@ -498,7 +498,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         </div>
 
         {/* Rain & Precipitation Summary */}
-        <div className="relative z-10 flex flex-col gap-2 shrink-0 bg-surface-container/80 p-4 rounded-xl backdrop-blur-md border border-white/[0.06] min-w-[220px]">
+        <div className="relative z-10 flex flex-col gap-2 shrink-0 bg-surface-container/80 p-4 rounded-xl backdrop-blur-md border border-white/[0.06] w-full sm:w-auto sm:min-w-[220px] lg:self-end">
           <div className="flex items-center justify-between gap-4">
             <span className="text-xs uppercase tracking-wider text-outline font-semibold">
               Rain Chance
@@ -529,13 +529,16 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
             <WeatherIcon name="schedule" className="w-4 h-4 text-primary" />
             <span>24-Hour Forecast</span>
           </div>
-          <span className="text-xs font-medium text-outline">
+          <span className="text-xs font-medium text-outline hidden sm:inline">
             Scroll horizontally to view upcoming hours →
+          </span>
+          <span className="text-xs font-medium text-outline sm:hidden">
+            Swipe →
           </span>
         </div>
 
         {/* Spacious 24-hour horizontal scroll strip */}
-        <div className="flex items-center gap-3 overflow-x-auto py-2 scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+        <div className="flex items-center gap-3 overflow-x-auto py-2 scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20 touch-pan-x overscroll-x-contain">
           {hourlySlots.map((slot, idx) => (
             <div
               key={idx}
@@ -572,8 +575,8 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
 
       {/* 4. 7-Day Forecast & Daily Highlights */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 7-Day Forecast (2 Cols) */}
-        <div className="lg:col-span-2 bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
+        {/* 7-Day Forecast (2 Cols on Tablet & Desktop) */}
+        <div className="md:col-span-2 lg:col-span-2 bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
           <div className="flex items-center justify-between pb-3 border-b border-white/[0.04]">
             <div className="flex items-center gap-2 text-on-surface font-semibold text-sm">
               <WeatherIcon name="calendar" className="w-4 h-4 text-primary" />
@@ -588,16 +591,16 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
                 key={idx}
                 className="flex items-center justify-between py-2.5 hover:bg-surface-container/30 px-2 rounded-lg transition-colors text-xs"
               >
-                <span className="font-semibold text-on-surface w-20">
+                <span className="font-semibold text-on-surface w-14 sm:w-20 shrink-0">
                   {item.day}
                 </span>
-                <div className="flex items-center gap-2 w-32">
+                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 sm:w-32 sm:flex-initial">
                   <WeatherIcon name={item.icon} className="w-4 h-4 text-primary shrink-0" />
-                  <span className="text-on-surface-variant truncate">
+                  <span className="text-on-surface-variant truncate text-[11px] sm:text-xs">
                     {item.desc}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 flex-1 max-w-[120px] px-2">
+                <div className="hidden sm:flex items-center gap-2 flex-1 max-w-[120px] px-2">
                   <div className="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
                     <div
                       className="bg-primary h-full rounded-full"
@@ -605,7 +608,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
                     />
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-right w-20 justify-end font-mono">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-right shrink-0 justify-end font-mono">
                   <span className="text-on-surface font-semibold">{formatTemp(item.max, isMetric)}</span>
                   <span className="text-outline">{formatTemp(item.min, isMetric)}</span>
                 </div>
@@ -819,8 +822,8 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
             </div>
 
             <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium pt-0.5">
-              <span>{sunSchedule.daylightRemainingText}</span>
-              <span className="text-primary font-mono text-[11px] font-semibold">{sunSchedule.progressPct}%</span>
+              <span className="truncate pr-2">{sunSchedule.daylightRemainingText}</span>
+              <span className="text-primary font-mono text-[11px] font-semibold shrink-0">{sunSchedule.progressPct}%</span>
             </div>
           </div>
         </div>
