@@ -134,3 +134,42 @@ input[type="search"]::-webkit-search-results-decoration {
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
+
+/* Animated footer watermark */
+@keyframes watermarkFloat {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.10;
+  }
+  50% {
+    transform: translateY(-10px) scale(1.03);
+    opacity: 0.20;
+  }
+}
+
+@keyframes watermarkShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes watermarkGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.15));
+  }
+  50% {
+    filter: drop-shadow(0 0 35px rgba(129, 140, 248, 0.35));
+  }
+}
+
+.animate-watermark {
+  background-size: 300% 300%;
+  animation: watermarkShimmer 10s ease-in-out infinite, watermarkFloat 6s ease-in-out infinite, watermarkGlow 8s ease-in-out infinite;
+}
+

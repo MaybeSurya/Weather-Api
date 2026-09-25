@@ -21,6 +21,18 @@ export function WeatherDashboard() {
   const [isMetric, setIsMetric] = useState<boolean>(true);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [activeNavTab, setActiveNavTab] = useState<string>("overview");
+  const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number; country?: string } | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+      if (tz.includes("Kolkata") || tz.includes("Calcutta") || tz.includes("India")) {
+        return { latitude: 28.9800, longitude: 79.4000, country: "India" };
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  });
 
   const hasMounted = useRef(false);
 
@@ -46,18 +58,18 @@ export function WeatherDashboard() {
         const code = json.error.code;
         if (code === "INVALID_CITY" || code === "INVALID_QUERY") {
           setErrorMessage(
-            `Unable to resolve coordinates for "${city || "requested location"}". Verify the spelling or select a calibrated station node.`
+            `We couldn't find "${city || "that location"}". Please check the spelling or try another city.`
           );
         } else if (code === "RATE_LIMIT_EXCEEDED") {
-          setErrorMessage("Rate limit reached. Please wait a moment and try again.");
+          setErrorMessage("Too many requests. Please wait a few seconds and try again.");
         } else {
-          setErrorMessage("Atmospheric telemetry temporarily unavailable. Please retry.");
+          setErrorMessage("Weather data is temporarily unavailable. Please try again.");
         }
       } else {
-        setErrorMessage("An unexpected fault occurred while fetching weather.");
+        setErrorMessage("An unexpected issue occurred while loading weather data.");
       }
     } catch {
-      setErrorMessage("Network signal lost. Please check your internet connection.");
+      setErrorMessage("Could not connect to weather server. Please check your internet connection.");
     } finally {
       setIsLoading(false);
     }
@@ -70,6 +82,35 @@ export function WeatherDashboard() {
       fetchWeather("Rudrapur");
     }
   }, [fetchWeather]);
+
+  // Approximate browser geolocation detection for smart relevance in search
+  useEffect(() => {
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+        },
+        () => {
+          // If denied, fallback coordinates remain active
+        },
+        { timeout: 8000, maximumAge: 600000, enableHighAccuracy: false }
+      );
+    }
+  }, []);
+
+  // Derived effective coordinates (prefers detected userCoords, then active weather location)
+  const effectiveUserCoords =
+    userCoords ??
+    (data?.coordinates
+      ? {
+          latitude: data.coordinates.latitude,
+          longitude: data.coordinates.longitude,
+          country: data.location?.country,
+        }
+      : null);
 
   return (
     <div className="min-h-screen flex flex-col bg-surface-container-lowest text-on-surface antialiased relative overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
@@ -103,7 +144,10 @@ export function WeatherDashboard() {
             <nav className="hidden lg:flex items-center bg-surface-container-low/80 p-1 rounded-xl border border-white/[0.04]">
               <button
                 type="button"
-                onClick={() => setActiveNavTab("overview")}
+                onClick={() => {
+                  setActiveNavTab("overview");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeNavTab === "overview"
                     ? "bg-surface-container-highest text-on-surface shadow-inner"
@@ -114,22 +158,36 @@ export function WeatherDashboard() {
               </button>
               <button
                 type="button"
-                onClick={() => setIsSearchOpen(true)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer"
+                onClick={() => {
+                  setActiveNavTab("hourly");
+                  document.getElementById("hourly-forecast")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activeNavTab === "hourly"
+                    ? "bg-surface-container-highest text-on-surface shadow-inner"
+                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
+                }`}
               >
                 Hourly Forecast
               </button>
               <button
                 type="button"
-                onClick={() => setIsSearchOpen(true)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer"
+                onClick={() => {
+                  setActiveNavTab("air-quality");
+                  document.getElementById("air-quality")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activeNavTab === "air-quality"
+                    ? "bg-surface-container-highest text-on-surface shadow-inner"
+                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
+                }`}
               >
                 Air Quality
               </button>
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer"
               >
                 Search Locations
               </button>
@@ -236,9 +294,86 @@ export function WeatherDashboard() {
         ) : null}
       </main>
 
-      {/* 3-Column Footer matching reference screenshot */}
-      <footer className="relative z-10 w-full bg-surface-container-lowest/90 backdrop-blur-md border-t border-white/[0.04] mt-auto shadow-[0_-1px_12px_rgba(0,0,0,0.5)]">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-10">
+      {/* Enhanced Footer with Animated Watermark & Interactive Controls */}
+      <footer className="relative w-full bg-surface-container-lowest/95 backdrop-blur-xl border-t border-white/[0.04] mt-auto shadow-[0_-4px_24px_rgba(0,0,0,0.6)] overflow-hidden">
+        <div className="relative z-10 max-w-[1240px] mx-auto px-4 sm:px-6 pt-10 pb-4">
+          {/* Interactive Controls Bar: Quick Cities, Units & Refresh */}
+          <div className="pb-6 mb-8 border-b border-white/[0.04] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 text-xs">
+            {/* Quick Cities */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-outline font-medium flex items-center gap-1.5 mr-1">
+                <WeatherIcon name="location_on" className="w-4 h-4 text-primary" />
+                <span>Quick Cities:</span>
+              </span>
+              {["Rudrapur", "Dehradun", "New Delhi", "London", "Tokyo", "New York", "Paris"].map((c) => {
+                const isActive = activeCity.toLowerCase() === c.toLowerCase();
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => {
+                      fetchWeather(c);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+                      isActive
+                        ? "bg-primary text-slate-900 font-bold shadow-md shadow-primary/25 ring-1 ring-primary"
+                        : "bg-surface-container hover:bg-surface-container-high text-on-surface hover:text-white"
+                    }`}
+                  >
+                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-slate-900 animate-ping" />}
+                    <span>{c}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Interactive Quick Actions */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => fetchWeather(activeCity)}
+                disabled={isLoading}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                title="Refresh current city forecast"
+              >
+                <WeatherIcon
+                  name="cloud_sync"
+                  className={`w-3.5 h-3.5 text-primary ${isLoading ? "animate-spin" : ""}`}
+                />
+                <span>Refresh</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsMetric(!isMetric)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium transition-all cursor-pointer active:scale-95"
+                title="Switch Temperature Units"
+              >
+                <span className="font-bold text-primary font-mono">{isMetric ? "°C" : "°F"}</span>
+                <span>Switch to {isMetric ? "°F" : "°C"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium transition-all cursor-pointer active:scale-95"
+              >
+                <WeatherIcon name="search" className="w-3.5 h-3.5 text-primary" />
+                <span>Search City</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-xs font-semibold text-primary hover:text-white transition-all cursor-pointer shadow-sm active:scale-95 ml-1"
+              >
+                <span>Top</span>
+                <WeatherIcon name="arrow_forward" className="w-3.5 h-3.5 -rotate-90" />
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8">
             {/* Col 1: Brand & Plain English description */}
             <div className="space-y-3 md:col-span-2">
@@ -251,7 +386,7 @@ export function WeatherDashboard() {
                 </span>
               </div>
               <p className="text-xs text-on-surface-variant max-w-sm leading-relaxed">
-                Simple, accurate, and real-time weather forecasts, 24-hour hourly outlooks, and clear meteorological data for cities worldwide.
+                Simple, accurate, and real-time weather forecasts, 24-hour hourly outlooks, and easy-to-read live conditions for cities worldwide.
               </p>
               {/* Mandatory Provider Attribution */}
               <div className="pt-2 text-xs text-on-surface-variant leading-relaxed">
@@ -359,11 +494,11 @@ export function WeatherDashboard() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="pt-6 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-outline">
+          <div className="pt-6 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-outline">
             <div className="flex flex-wrap items-center gap-2">
               <span>© 2025 Maybesurya Weather.</span>
-              <span className="text-on-surface-variant font-sans font-medium">
-                Made with ❤️ by{" "}
+              <span className="text-on-surface-variant font-medium">
+                Made with <span className="text-rose-500 animate-pulse inline-block">❤️</span> by{" "}
                 <a
                   href="https://github.com/maybesurya"
                   target="_blank"
@@ -394,19 +529,41 @@ export function WeatherDashboard() {
                 <span>API</span>
               </a>
               <span className="text-on-surface-variant flex items-center gap-1.5">
-                <WeatherIcon name="cloud_sync" className="w-3.5 h-3.5" />
-                <span>Live Data</span>
+                <WeatherIcon name="cloud_sync" className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Live Updates</span>
               </span>
             </div>
           </div>
         </div>
+
+        {/* Interactive Animated Footer Watermark */}
+        <div className="relative w-full overflow-hidden select-none flex flex-col items-center justify-center pt-4 pb-2 border-t border-white/[0.02]">
+          <a
+            href="https://github.com/maybesurya"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group cursor-pointer flex flex-col items-center justify-center transition-all duration-300 transform hover:scale-[1.02]"
+            aria-label="Created by maybesurya on GitHub"
+          >
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container/80 border border-white/[0.06] text-xs text-on-surface-variant group-hover:text-primary group-hover:border-primary/30 transition-all duration-300 shadow-sm backdrop-blur-md mb-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <span>Crafted with love by maybesurya</span>
+              <WeatherIcon name="arrow_forward" className="w-3.5 h-3.5 text-primary group-hover:translate-x-0.5 transition-transform" />
+            </div>
+
+            <span className="text-[12vw] sm:text-[13vw] font-black tracking-tighter uppercase whitespace-nowrap bg-gradient-to-r from-sky-400 via-primary via-indigo-400 to-sky-300 bg-clip-text text-transparent animate-watermark group-hover:brightness-125 transition-all duration-500 drop-shadow-[0_0_30px_rgba(56,189,248,0.15)]">
+              MAYBESURYA
+            </span>
+          </a>
+        </div>
       </footer>
 
-      {/* Global Cmd+K Search Modal */}
+      {/* Global Cmd+K Search Modal with Smart Location Ranking */}
       <WeatherSearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onSelectCity={(city) => fetchWeather(city)}
+        userCoords={effectiveUserCoords}
       />
     </div>
   );

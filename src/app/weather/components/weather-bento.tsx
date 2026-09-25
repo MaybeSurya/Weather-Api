@@ -28,43 +28,171 @@ function formatTemp(celsius: number, isMetric: boolean): string {
 }
 
 /**
- * Calculates solar sunrise and sunset times based on coordinates and current date
+ * Accurately calculates solar sunrise, sunset, local solar noon, and exact current sun progress.
+ * Accounts for latitude, longitude (EoT meridian shift), and timezone offset.
  */
-function calculateSunTimes(lat: number) {
+function calculateSunSchedule(lat: number, lon: number, timezone?: string) {
   const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 0);
-  const diff = now.getTime() - startOfYear.getTime();
-  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  // Day of the year
+  const startOfYear = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+  const diffMs = now.getTime() - startOfYear.getTime();
+  const dayOfYear = Math.floor(diffMs / 86400000) + 1;
+
+  // Current UTC time in hours
+  const utcHours = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
+
+  // Fractional year gamma in radians
+  const gamma = ((2 * Math.PI) / 365) * (dayOfYear - 1 + (utcHours - 12) / 24);
+
+  // Equation of Time (EoT) in minutes
+  const eqtime =
+    229.18 *
+    (0.000075 +
+      0.001868 * Math.cos(gamma) -
+      0.032077 * Math.sin(gamma) -
+      0.014615 * Math.cos(2 * gamma) -
+      0.040849 * Math.sin(2 * gamma));
 
   // Solar declination in radians
   const declination =
-    23.45 * Math.sin(((360 / 365) * (dayOfYear - 81) * Math.PI) / 180) * (Math.PI / 180);
-  const latRad = (lat * Math.PI) / 180;
+    0.006918 -
+    0.399912 * Math.cos(gamma) +
+    0.070257 * Math.sin(gamma) -
+    0.006758 * Math.cos(2 * gamma) +
+    0.000907 * Math.sin(2 * gamma) -
+    0.002697 * Math.cos(3 * gamma) +
+    0.00148 * Math.sin(3 * gamma);
 
-  // Hour angle calculation
-  const cosHourAngle = -Math.tan(latRad) * Math.tan(declination);
+  // Solar zenith angle for official sunrise/sunset = 90.833 degrees
+  const latRad = (lat * Math.PI) / 180;
+  const cosHourAngle =
+    (Math.cos((90.833 * Math.PI) / 180) - Math.sin(latRad) * Math.sin(declination)) /
+    (Math.cos(latRad) * Math.cos(declination));
   const clampedCos = Math.max(-1, Math.min(1, cosHourAngle));
   const hourAngleDeg = (Math.acos(clampedCos) * 180) / Math.PI;
 
+  // Half-day duration in hours
   const halfDayHours = hourAngleDeg / 15;
-  const approxSunrise = 12 - halfDayHours;
-  const approxSunset = 12 + halfDayHours;
 
-  const formatTime = (hDecimal: number) => {
-    const totalMinutes = Math.round(hDecimal * 60);
-    const hours24 = Math.floor(totalMinutes / 60) % 24;
-    const minutes = totalMinutes % 60;
-    const hours12 = hours24 % 12 || 12;
-    const ampm = hours24 < 12 ? "AM" : "PM";
-    const padMin = minutes.toString().padStart(2, "0");
-    return `${hours12}:${padMin} ${ampm}`;
+  // Solar noon in UTC minutes from midnight
+  const solarNoonUtcMinutes = 720 - 4 * lon - eqtime;
+  const sunriseUtcMinutes = solarNoonUtcMinutes - halfDayHours * 60;
+  const sunsetUtcMinutes = solarNoonUtcMinutes + halfDayHours * 60;
+
+  // Format UTC minutes into local time for the target timezone
+  const formatUtcMinutesToLocal = (minutes: number) => {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, Math.round(minutes)));
+    try {
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone: timezone || undefined,
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }).format(d);
+    } catch {
+      const normalized = (minutes + 1440 * 2) % 1440;
+      const h24 = Math.floor(normalized / 60) % 24;
+      const m = Math.round(normalized % 60);
+      const ampm = h24 < 12 ? "AM" : "PM";
+      const h12 = h24 % 12 || 12;
+      return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
+    }
   };
 
+  const getLocalDecimalHour = (minutes: number) => {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, Math.round(minutes)));
+    try {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: timezone || undefined,
+        hour: "numeric",
+        minute: "numeric",
+        hour12: false,
+      }).formatToParts(d);
+      const h = parseInt(parts.find((p) => p.type === "hour")?.value || "6", 10);
+      const m = parseInt(parts.find((p) => p.type === "minute")?.value || "0", 10);
+      return h + m / 60;
+    } catch {
+      return 6;
+    }
+  };
+
+  const sunriseFormatted = formatUtcMinutesToLocal(sunriseUtcMinutes);
+  const sunsetFormatted = formatUtcMinutesToLocal(sunsetUtcMinutes);
+  const sunriseHour = getLocalDecimalHour(sunriseUtcMinutes);
+  const sunsetHour = getLocalDecimalHour(sunsetUtcMinutes);
+
+  // Current time in UTC minutes from midnight
+  const currentUtcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes() + now.getUTCSeconds() / 60;
+
+  // Normalize UTC minutes
+  const normSunrise = (sunriseUtcMinutes + 1440) % 1440;
+  const normSunset = (sunsetUtcMinutes + 1440) % 1440;
+
+  let isDaylight = false;
+  let progressPct = 0;
+  let daylightRemainingText = "";
+
+  if (normSunrise < normSunset) {
+    isDaylight = currentUtcMinutes >= normSunrise && currentUtcMinutes <= normSunset;
+    if (isDaylight) {
+      const dayLen = normSunset - normSunrise;
+      const elapsed = currentUtcMinutes - normSunrise;
+      progressPct = Math.max(0, Math.min(100, Math.round((elapsed / dayLen) * 100)));
+      const leftMinutes = Math.round(normSunset - currentUtcMinutes);
+      const leftH = Math.floor(leftMinutes / 60);
+      const leftM = leftMinutes % 60;
+      daylightRemainingText = `${leftH}h ${leftM}m of daylight remaining`;
+    } else {
+      const nightLen = 1440 - (normSunset - normSunrise);
+      const elapsedNight =
+        currentUtcMinutes > normSunset
+          ? currentUtcMinutes - normSunset
+          : 1440 - normSunset + currentUtcMinutes;
+      progressPct = Math.max(0, Math.min(100, Math.round((elapsedNight / nightLen) * 100)));
+      const leftToSunrise =
+        currentUtcMinutes < normSunrise
+          ? normSunrise - currentUtcMinutes
+          : 1440 - currentUtcMinutes + normSunrise;
+      const leftH = Math.floor(leftToSunrise / 60);
+      const leftM = Math.round(leftToSunrise % 60);
+      daylightRemainingText = `Sunrise in ${leftH}h ${leftM}m`;
+    }
+  } else {
+    isDaylight = currentUtcMinutes >= normSunrise || currentUtcMinutes <= normSunset;
+    if (isDaylight) {
+      const dayLen = 1440 - normSunrise + normSunset;
+      const elapsed =
+        currentUtcMinutes >= normSunrise
+          ? currentUtcMinutes - normSunrise
+          : 1440 - normSunrise + currentUtcMinutes;
+      progressPct = Math.max(0, Math.min(100, Math.round((elapsed / dayLen) * 100)));
+      const leftMinutes =
+        currentUtcMinutes >= normSunrise
+          ? 1440 - currentUtcMinutes + normSunset
+          : normSunset - currentUtcMinutes;
+      const leftH = Math.floor(leftMinutes / 60);
+      const leftM = Math.round(leftMinutes % 60);
+      daylightRemainingText = `${leftH}h ${leftM}m of daylight remaining`;
+    } else {
+      const nightLen = normSunrise - normSunset;
+      const elapsedNight = currentUtcMinutes - normSunset;
+      progressPct = Math.max(0, Math.min(100, Math.round((elapsedNight / nightLen) * 100)));
+      const leftToSunrise = Math.round(normSunrise - currentUtcMinutes);
+      const leftH = Math.floor(leftToSunrise / 60);
+      const leftM = Math.round(leftToSunrise % 60);
+      daylightRemainingText = `Sunrise in ${leftH}h ${leftM}m`;
+    }
+  }
+
   return {
-    sunrise: formatTime(approxSunrise),
-    sunset: formatTime(approxSunset),
-    sunriseHour: approxSunrise,
-    sunsetHour: approxSunset,
+    sunrise: sunriseFormatted,
+    sunset: sunsetFormatted,
+    sunriseHour,
+    sunsetHour,
+    isDaylight,
+    progressPct,
+    daylightRemainingText,
   };
 }
 
@@ -91,8 +219,12 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
   const isFog = condDesc.includes("fog") || condDesc.includes("mist") || condDesc.includes("haze");
   const isCloudy = !isThunder && !isSnow && !isRain && !isFog && (condDesc.includes("cloud") || condDesc.includes("overcast"));
 
-  // Real solar calculations
-  const sunTimes = calculateSunTimes(coordinates?.latitude ?? 28.6);
+  // Real astronomical solar calculations
+  const sunSchedule = calculateSunSchedule(
+    coordinates?.latitude ?? 28.6,
+    coordinates?.longitude ?? 79.4,
+    location.timezone
+  );
 
   // Current local hour estimation
   let currentHour = new Date().getHours();
@@ -107,7 +239,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
     // fallback
   }
 
-  const isNight = currentHour < sunTimes.sunriseHour || currentHour >= sunTimes.sunsetHour;
+  const isNight = !sunSchedule.isDaylight;
 
   // Dynamic high & low based on diurnal solar curve
   const highTempC = currentTempC + (isNight ? 3 : 2);
@@ -187,7 +319,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
   const hourlySlots = [];
   for (let i = 0; i < 24; i++) {
     const slotHour24 = (currentHour + i) % 24;
-    const isSlotNight = slotHour24 < sunTimes.sunriseHour || slotHour24 >= sunTimes.sunsetHour;
+    const isSlotNight = slotHour24 < sunSchedule.sunriseHour || slotHour24 >= sunSchedule.sunsetHour;
     const label = i === 0 ? "Now" : `${slotHour24.toString().padStart(2, "0")}:00`;
 
     // Diurnal temperature swing: coolest at 5 AM, warmest at 2 PM (14:00)
@@ -382,7 +514,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
             />
           </div>
           <div className="flex items-center justify-between text-on-surface-variant text-xs pt-0.5">
-            <span>{isRain || isThunder ? "Rainfall rate" : "Current state"}</span>
+            <span>{isRain || isThunder ? "Rain rate" : "Current weather"}</span>
             <span className="font-mono text-on-surface font-medium">
               {isRain || isThunder ? precipIntensity : "Dry"}
             </span>
@@ -391,7 +523,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
       </div>
 
       {/* 3. FULL-WIDTH 24-HOUR HOURLY FORECAST (Fills removed map space) */}
-      <div className="w-full bg-surface-container-low rounded-2xl p-5 md:p-6 shadow-md border border-white/[0.04]">
+      <div id="hourly-forecast" className="w-full bg-surface-container-low rounded-2xl p-5 md:p-6 shadow-md border border-white/[0.04] scroll-mt-24">
         <div className="flex items-center justify-between pb-4 border-b border-white/[0.04] mb-3">
           <div className="flex items-center gap-2 text-on-surface font-semibold text-sm">
             <WeatherIcon name="schedule" className="w-4 h-4 text-primary" />
@@ -483,7 +615,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         </div>
 
         {/* Air Quality (1 Col) */}
-        <div className="bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
+        <div id="air-quality" className="bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04] scroll-mt-24">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-on-surface font-semibold text-sm">
               <WeatherIcon name="air" className="w-4 h-4 text-primary" />
@@ -546,7 +678,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
           <div className="flex items-center justify-between text-on-surface-variant text-xs pt-1 border-t border-white/[0.04]">
             <span>Condition</span>
             <span className="text-on-surface font-medium">
-              {windKmh < 8 ? "Calm & steady" : "Active airflow"}
+              {windKmh < 8 ? "Calm & steady" : "Breezy & windy"}
             </span>
           </div>
         </div>
@@ -575,10 +707,10 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
             </div>
             <p className="text-xs text-on-surface-variant pt-2 leading-relaxed">
               {isNight
-                ? "Sun has set. Zero UV exposure during night hours."
+                ? "Sun has set. No sun protection needed at night."
                 : isCloudy || isRain
-                ? "Clouds block much of the solar UV radiation."
-                : "Sunlight is direct. Stay protected during afternoon peaks."}
+                ? "Clouds block most direct sun rays."
+                : "Direct sunshine. Stay shaded during afternoon hours."}
             </p>
           </div>
 
@@ -610,7 +742,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
           <div className="py-3">
             <div className="flex items-baseline gap-1">
               <span className="font-display text-4xl font-bold text-on-surface">{humidityNum}%</span>
-              <span className="text-sm font-medium text-on-surface-variant">RH</span>
+              <span className="text-sm font-medium text-on-surface-variant">humidity</span>
             </div>
             <p className="text-xs text-on-surface-variant pt-2 leading-relaxed">
               The dew point is {formatTemp(dewPointC, isMetric)}. {humidityNum > 75 ? "The air feels moist and damp." : "Comfortable moisture levels."}
@@ -624,38 +756,72 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         </div>
 
         {/* Sunrise & Sunset */}
-        <div className="bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
-          <div className="flex items-center justify-between">
+        <div className="bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04] relative overflow-hidden group">
+          {/* Subtle ambient lighting */}
+          <div
+            className={`absolute -top-12 -right-12 w-32 h-32 rounded-full blur-2xl pointer-events-none transition-opacity duration-500 ${
+              sunSchedule.isDaylight ? "bg-amber-400/10 group-hover:bg-amber-400/15" : "bg-indigo-500/10"
+            }`}
+          />
+
+          <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-2 text-on-surface font-semibold text-sm">
               <WeatherIcon name="routine" className="w-4 h-4 text-primary" />
               <span>Sun Schedule</span>
             </div>
-            <span className="text-xs text-outline font-mono">
-              {location.timezone ? location.timezone.split("/")[1]?.replace("_", " ") || "Local" : "Local"}
+            <span
+              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                sunSchedule.isDaylight
+                  ? "bg-amber-400/10 text-amber-400 border border-amber-400/20"
+                  : "bg-indigo-400/10 text-indigo-300 border border-indigo-400/20"
+              }`}
+            >
+              {sunSchedule.isDaylight ? "Daylight Active" : "Nighttime"}
             </span>
           </div>
 
-          <div className="py-3 flex items-center justify-around">
+          <div className="py-3 flex items-center justify-around relative z-10">
             <div className="flex flex-col items-center">
-              <WeatherIcon name="sunrise" className="w-5 h-5 text-amber-400" />
-              <span className="text-[10px] font-semibold text-outline mt-1 uppercase">Sunrise</span>
-              <span className="text-sm font-bold text-on-surface font-mono">{sunTimes.sunrise}</span>
+              <div className="w-8 h-8 rounded-full bg-amber-400/10 flex items-center justify-center mb-1 text-amber-400 shadow-sm">
+                <WeatherIcon name="sunrise" className="w-4 h-4 text-amber-400" />
+              </div>
+              <span className="text-[10px] font-semibold text-outline uppercase tracking-wider">Sunrise</span>
+              <span className="text-sm font-bold text-on-surface font-mono">{sunSchedule.sunrise}</span>
             </div>
-            <div className="h-8 w-px bg-surface-container-highest" />
+            <div className="h-9 w-px bg-surface-container-highest" />
             <div className="flex flex-col items-center">
-              <WeatherIcon name="sunset" className="w-5 h-5 text-rose-400" />
-              <span className="text-[10px] font-semibold text-outline mt-1 uppercase">Sunset</span>
-              <span className="text-sm font-bold text-on-surface font-mono">{sunTimes.sunset}</span>
+              <div className="w-8 h-8 rounded-full bg-rose-400/10 flex items-center justify-center mb-1 text-rose-400 shadow-sm">
+                <WeatherIcon name="sunset" className="w-4 h-4 text-rose-400" />
+              </div>
+              <span className="text-[10px] font-semibold text-outline uppercase tracking-wider">Sunset</span>
+              <span className="text-sm font-bold text-on-surface font-mono">{sunSchedule.sunset}</span>
             </div>
           </div>
 
-          <div className="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-amber-400 h-full rounded-full"
-              style={{
-                width: isNight ? "10%" : "65%",
-              }}
-            />
+          <div className="space-y-2 relative z-10">
+            {/* Real-time Synchronized Sun Progression Track */}
+            <div className="relative w-full bg-surface-container-highest rounded-full h-2 my-1">
+              <div
+                className={`h-full rounded-full transition-all duration-700 ${
+                  sunSchedule.isDaylight
+                    ? "bg-gradient-to-r from-amber-400 via-yellow-400 to-rose-400"
+                    : "bg-gradient-to-r from-indigo-500 via-sky-500 to-amber-300"
+                }`}
+                style={{ width: `${sunSchedule.progressPct}%` }}
+              />
+              {/* Glowing Sun Position Indicator Pin */}
+              <div
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-white shadow-[0_0_12px_rgba(251,191,36,0.95)] border-2 border-amber-400 flex items-center justify-center transition-all duration-700"
+                style={{ left: `${Math.min(98, Math.max(2, sunSchedule.progressPct))}%` }}
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium pt-0.5">
+              <span>{sunSchedule.daylightRemainingText}</span>
+              <span className="text-primary font-mono text-[11px] font-semibold">{sunSchedule.progressPct}%</span>
+            </div>
           </div>
         </div>
 
@@ -676,10 +842,10 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
             </div>
             <p className="text-xs text-on-surface-variant pt-2 leading-relaxed">
               {visibilityKm >= 10
-                ? "Perfect clear view. No atmospheric haze or obstruction."
+                ? "Clear open view with sharp visibility."
                 : visibilityKm >= 5
                 ? "Moderate visibility. Slight mist or rain in the area."
-                : "Reduced visibility due to fog or dense precipitation."}
+                : "Reduced visibility due to fog or rain."}
             </p>
           </div>
 

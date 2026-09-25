@@ -7,15 +7,16 @@ interface WeatherSearchProps {
   onSearch: (city: string | null) => void;
   isLoading: boolean;
   currentCity?: string;
+  userCoords?: { latitude: number; longitude: number; country?: string } | null;
 }
 
 const QUICK_CITIES = ["Delhi", "London", "Tokyo", "Mumbai", "New York"];
 
 /**
  * WeatherSearch with live location autocomplete index (Apple/Google Weather style).
- * Handles debounced suggestion fetching, keyboard navigation, and single custom clear button.
+ * Handles debounced suggestion fetching, keyboard navigation, and smart location relevance ranking.
  */
-export function WeatherSearch({ onSearch, isLoading, currentCity }: WeatherSearchProps) {
+export function WeatherSearch({ onSearch, isLoading, currentCity, userCoords }: WeatherSearchProps) {
   const [inputVal, setInputVal] = useState(currentCity ?? "");
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -46,7 +47,16 @@ export function WeatherSearch({ onSearch, isLoading, currentCity }: WeatherSearc
     const timer = setTimeout(async () => {
       setIsSearchingSuggestions(true);
       try {
-        const res = await fetch(`/api/weather/search?q=${encodeURIComponent(trimmed)}`);
+        const params = new URLSearchParams({ q: trimmed });
+        if (userCoords?.latitude && userCoords?.longitude) {
+          params.set("lat", String(userCoords.latitude));
+          params.set("lon", String(userCoords.longitude));
+        }
+        if (userCoords?.country) {
+          params.set("country", userCoords.country);
+        }
+
+        const res = await fetch(`/api/weather/search?${params.toString()}`);
         if (res.ok) {
           const data = (await res.json()) as { suggestions?: SearchSuggestion[] };
           if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
@@ -66,7 +76,7 @@ export function WeatherSearch({ onSearch, isLoading, currentCity }: WeatherSearc
     }, 180);
 
     return () => clearTimeout(timer);
-  }, [inputVal]);
+  }, [inputVal, userCoords]);
 
   const handleSelect = (item: SearchSuggestion) => {
     setInputVal(item.name);
@@ -289,8 +299,8 @@ export function WeatherSearch({ onSearch, isLoading, currentCity }: WeatherSearc
                   </div>
                 </div>
 
-                <span className="text-[11px] text-white/30 hidden sm:inline-flex items-center gap-1 font-mono">
-                  Select ↵
+                <span className="text-[11px] text-white/40 hidden sm:inline-flex items-center gap-1 font-sans">
+                  Enter ↵
                 </span>
               </button>
             );

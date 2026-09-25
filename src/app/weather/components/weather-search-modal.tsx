@@ -8,52 +8,53 @@ interface WeatherSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectCity: (city: string) => void;
+  userCoords?: { latitude: number; longitude: number; country?: string } | null;
 }
 
 const RECENT_CHIPS = [
-  { label: "Rudrapur, IN", city: "Rudrapur", temp: "23°" },
-  { label: "London, UK", city: "London", temp: "11°" },
-  { label: "San Francisco, CA", city: "San Francisco", temp: "15°" },
+  { label: "Rudrapur, IN", city: "Rudrapur", temp: "24°" },
+  { label: "Dehradun, IN", city: "Dehradun", temp: "22°" },
+  { label: "New Delhi, IN", city: "New Delhi", temp: "28°" },
+  { label: "London, UK", city: "London", temp: "14°" },
   { label: "Tokyo, JP", city: "Tokyo", temp: "18°" },
-  { label: "Delhi, IN", city: "Delhi", temp: "28°" },
 ];
 
 const DEFAULT_SUGGESTIONS = [
   {
-    name: "Tokyo",
-    code: "JP",
-    condition: "Light Rain",
-    meta: "18:42 JST • 88% precip",
+    name: "Rudrapur",
+    code: "IN",
+    condition: "Sunny & Pleasant",
+    meta: "Uttarakhand • Near you",
+    temp: "24°",
+    highLow: "H: 28° L: 19°",
+    icon: "wb_sunny",
+  },
+  {
+    name: "Dehradun",
+    code: "IN",
+    condition: "Partly Cloudy",
+    meta: "Uttarakhand • 160 km",
+    temp: "22°",
+    highLow: "H: 25° L: 16°",
+    icon: "partly_cloudy_day",
+  },
+  {
+    name: "New Delhi",
+    code: "IN",
+    condition: "Hazy Sun",
+    meta: "Delhi • 220 km",
+    temp: "28°",
+    highLow: "H: 32° L: 23°",
+    icon: "wb_sunny",
+  },
+  {
+    name: "London",
+    code: "GB",
+    condition: "Light Showers",
+    meta: "England • Worldwide",
     temp: "14°",
-    highLow: "H: 16° L: 12°",
+    highLow: "H: 16° L: 10°",
     icon: "rainy",
-  },
-  {
-    name: "Tokushima",
-    code: "JP",
-    condition: "Cloudy",
-    meta: "18:42 JST • Wind 11 km/h",
-    temp: "16°",
-    highLow: "H: 17° L: 13°",
-    icon: "cloud",
-  },
-  {
-    name: "Tokat",
-    code: "TR",
-    condition: "Clear Sky",
-    meta: "12:42 TRT • UV 4 Moderate",
-    temp: "9°",
-    highLow: "H: 11° L: 4°",
-    icon: "wb_sunny",
-  },
-  {
-    name: "Toledo, Ohio",
-    code: "US",
-    condition: "Sunny",
-    meta: "05:42 EDT • Dew 10°",
-    temp: "21°",
-    highLow: "H: 26° L: 14°",
-    icon: "wb_sunny",
   },
 ];
 
@@ -61,6 +62,7 @@ export function WeatherSearchModal({
   isOpen,
   onClose,
   onSelectCity,
+  userCoords,
 }: WeatherSearchModalProps) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
@@ -113,6 +115,10 @@ export function WeatherSearchModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleClose]);
 
+  const userLat = userCoords?.latitude;
+  const userLon = userCoords?.longitude;
+  const userCountry = userCoords?.country;
+
   // Debounced search query against /api/weather/search
   useEffect(() => {
     const trimmed = query.trim();
@@ -123,7 +129,15 @@ export function WeatherSearchModal({
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(`/api/weather/search?q=${encodeURIComponent(trimmed)}`);
+        let url = `/api/weather/search?q=${encodeURIComponent(trimmed)}`;
+        if (userLat != null && userLon != null) {
+          url += `&lat=${userLat}&lon=${userLon}`;
+        }
+        if (userCountry) {
+          url += `&country=${encodeURIComponent(userCountry)}`;
+        }
+
+        const res = await fetch(url);
         if (res.ok) {
           const data = (await res.json()) as { suggestions?: SearchSuggestion[] };
           if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
@@ -141,7 +155,7 @@ export function WeatherSearchModal({
     }, 180);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, userLat, userLon, userCountry]);
 
   const handleInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
@@ -198,7 +212,7 @@ export function WeatherSearchModal({
               }
             }}
             onKeyDown={handleInputKeyDown}
-            placeholder="Search city, airport, or coordinates..."
+            placeholder="Search for any city, town, or place..."
             className="bg-transparent border-0 outline-none text-on-surface placeholder:text-outline font-display text-base w-full focus:ring-0 font-medium"
           />
 
@@ -244,7 +258,7 @@ export function WeatherSearchModal({
           </kbd>
         </div>
 
-        {/* Quick Telemetry & Recent Searches Filter Row */}
+        {/* Quick Picks & Recent Searches */}
         <div className="px-4 sm:px-6 py-2.5 bg-surface-container-low/70 flex flex-wrap items-center gap-2 border-b border-white/[0.04]">
           <span className="text-[11px] font-semibold text-outline uppercase tracking-wider shrink-0 flex items-center gap-1">
             <WeatherIcon name="history" className="w-3.5 h-3.5 text-primary" />
@@ -294,23 +308,31 @@ export function WeatherSearchModal({
                       <WeatherIcon name="location_on" className="w-5 h-5" />
                     </div>
                     <div className="truncate">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-sm font-semibold text-on-surface group-hover:text-primary">
                           {item.name}
                         </span>
                         <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-surface-container-highest text-outline uppercase font-mono">
                           {countryCode}
                         </span>
+                        {item.isNearby ? (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            Nearby{item.distanceKm ? ` · ${item.distanceKm} km` : ""}
+                          </span>
+                        ) : item.distanceKm && item.distanceKm < 1500 ? (
+                          <span className="text-[10px] text-outline px-1.5 py-0.2 rounded bg-surface-container/60 font-mono">
+                            {item.distanceKm} km
+                          </span>
+                        ) : null}
                       </div>
                       <div className="text-xs text-on-surface-variant truncate mt-0.5">
                         {[item.region, item.country].filter(Boolean).join(" · ")}
-                        {item.latitude && item.longitude ? ` • ${item.latitude.toFixed(2)}°N, ${item.longitude.toFixed(2)}°E` : ""}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-outline hidden sm:inline-block">
-                      Select ↵
+                    <span className="text-xs text-outline hidden sm:inline-block">
+                      Enter ↵
                     </span>
                     <WeatherIcon name="arrow_forward" className="w-5 h-5 text-outline group-hover:text-primary transition-colors" />
                   </div>
@@ -320,7 +342,7 @@ export function WeatherSearchModal({
           ) : query.trim().length >= 2 && !isSearching ? (
             <div className="px-4 py-8 text-center text-on-surface-variant text-sm">
               <WeatherIcon name="cloud_off" className="w-8 h-8 text-outline mb-2 mx-auto block" />
-              No matching locations found for &quot;{query}&quot;. Press Enter to query directly.
+              No cities found matching &quot;{query}&quot;. Press Enter to search anyway.
             </div>
           ) : (
             DEFAULT_SUGGESTIONS.map((item, index) => {
@@ -369,32 +391,38 @@ export function WeatherSearchModal({
           )}
         </div>
 
-        {/* Global Synoptic Banner */}
+        {/* Helpful Search Tip Banner */}
         <div className="px-4 sm:px-6 py-3 bg-surface-container-low/90 flex items-center justify-between border-t border-white/[0.06]">
           <div className="flex items-center gap-2 text-xs text-on-surface-variant">
-            <WeatherIcon name="map" className="w-[18px] h-[18px] text-primary" />
-            <span>Global Synoptic Layer · Explore interactive precipitation &amp; thermal vectors</span>
+            <WeatherIcon name="globe" className="w-4 h-4 text-primary" />
+            <span>Search any city, town, or country in the world</span>
           </div>
           <button
             type="button"
             onClick={() => handleSelect(query.trim() || "Rudrapur")}
-            className="text-xs font-semibold text-primary hover:text-white flex items-center gap-0.5 cursor-pointer"
+            className="text-xs font-semibold text-primary hover:text-white flex items-center gap-1 cursor-pointer"
           >
-            <span>Open Radar</span>
+            <span>Show Weather</span>
             <WeatherIcon name="arrow_forward" className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Keyboard navigation bar */}
-        <div className="px-4 sm:px-6 py-2 bg-surface-container-lowest flex items-center justify-between text-[11px] text-outline font-mono border-t border-white/[0.04]">
-          <div className="flex items-center gap-3">
-            <span>↑ ↓ Navigate</span>
-            <span>↵ Select</span>
-            <span>ESC Close</span>
+        {/* Friendly guidance bar */}
+        <div className="px-4 sm:px-6 py-2.5 bg-surface-container-lowest flex flex-wrap items-center justify-between gap-3 text-xs text-on-surface-variant border-t border-white/[0.04]">
+          <div className="flex items-center gap-2 text-[11px]">
+            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-medium">↑</span>
+            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-medium">↓</span>
+            <span>Arrow keys to move</span>
+            <span className="text-outline/40 mx-1">•</span>
+            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-medium">Enter</span>
+            <span>Choose</span>
+            <span className="text-outline/40 mx-1">•</span>
+            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-medium">Esc</span>
+            <span>Exit</span>
           </div>
-          <div className="flex items-center gap-1.5 text-primary">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span>GEMS SATELLITE LINK 904</span>
+          <div className="flex items-center gap-1.5 text-emerald-400 font-medium text-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Live search ready</span>
           </div>
         </div>
       </div>

@@ -10,6 +10,8 @@ export interface SearchSuggestion {
   latitude: number;
   longitude: number;
   displayName: string;
+  distanceKm?: number;
+  isNearby?: boolean;
 }
 
 interface OpenMeteoGeocodingItem {
@@ -18,6 +20,7 @@ interface OpenMeteoGeocodingItem {
   latitude: number;
   longitude: number;
   country?: string;
+  country_code?: string;
   admin1?: string;
 }
 
@@ -28,6 +31,104 @@ interface WeatherApiSearchItem {
   country: string;
   lat: number;
   lon: number;
+}
+
+/**
+ * Calculates great-circle distance (Haversine formula) in kilometers
+ */
+function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/**
+ * Computes intelligent search relevance score prioritizing user's approximate location
+ */
+function getRelevanceScore(
+  item: { name: string; region: string; country: string; latitude: number; longitude: number },
+  query: string,
+  userLat?: number,
+  userLon?: number,
+  userCountry?: string
+): number {
+  let score = 0;
+  const lowerName = item.name.toLowerCase().trim();
+  const lowerQ = query.toLowerCase().trim();
+  const lowerCountry = item.country.toLowerCase().trim();
+  const lowerRegion = item.region.toLowerCase().trim();
+
+  // 1. Textual Match Scoring
+  if (lowerName === lowerQ) {
+    score += 25000;
+  } else if (lowerName.startsWith(lowerQ)) {
+    score += 12000;
+  } else {
+    const words = lowerName.split(/[\s,-]+/);
+    if (words.some((w) => w.startsWith(lowerQ))) {
+      score += 7000;
+    } else if (lowerName.includes(lowerQ)) {
+      score += 3500;
+    } else if (lowerRegion.startsWith(lowerQ) || lowerCountry.startsWith(lowerQ)) {
+      score += 2000;
+    }
+  }
+
+  // 2. Proximity & Geographic Distance Boost (Closest to user ranks highest)
+  if (
+    userLat !== undefined &&
+    userLon !== undefined &&
+    !isNaN(userLat) &&
+    !isNaN(userLon) &&
+    item.latitude &&
+    item.longitude
+  ) {
+    const distKm = calculateDistanceKm(userLat, userLon, item.latitude, item.longitude);
+    if (distKm < 50) {
+      score += 15000; // Immediate town/district
+    } else if (distKm < 150) {
+      score += 10000; // Neighboring city
+    } else if (distKm < 500) {
+      score += 6500; // Same state/province
+    } else if (distKm < 1200) {
+      score += 4000; // Same country/subcontinent
+    } else if (distKm < 2500) {
+      score += 1500;
+    }
+    // Gradual decay bonus
+    score += Math.max(0, 3000 - distKm * 1.2);
+  }
+
+  // 3. Country Matching Boost
+  if (userCountry) {
+    const uCountry = userCountry.toLowerCase();
+    if (
+      lowerCountry.includes(uCountry) ||
+      (uCountry === "in" && (lowerCountry.includes("india") || lowerCountry === "in")) ||
+      (uCountry === "us" && (lowerCountry.includes("united states") || lowerCountry === "usa" || lowerCountry === "us")) ||
+      (uCountry === "gb" && (lowerCountry.includes("united kingdom") || lowerCountry === "uk" || lowerCountry === "gb"))
+    ) {
+      score += 6000;
+    }
+  }
+
+  // 4. Region presence bonus
+  if (item.region) {
+    score += 400;
+  }
+
+  // 5. Length tie-breaker (prefer concise names closer to query length)
+  score += Math.max(0, 50 - Math.abs(item.name.length - query.length));
+
+  return score;
 }
 
 /**
@@ -50,10 +151,9 @@ export async function OPTIONS(): Promise<NextResponse> {
 }
 
 /**
- * GET /api/weather/search?q=rudr
- * Live location search / autocomplete index.
- * Combines Open-Meteo Geocoding and WeatherAPI Search (when key is available)
- * to provide instantaneous search suggestions (e.g. "Rudrapur, Uttarakhand", "Rudraprayag, Uttarakhand").
+ * GET /api/weather/search?q=rudr&lat=28.98&lon=79.40&country=IN
+ * Live location search / autocomplete index with location-aware smart relevance.
+ * Prioritizes locations near the user's approximate coordinates and country.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
@@ -74,6 +174,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Determine user's approximate location from query params or headers
+  const paramLat = searchParams.get("lat");
+  const paramLon = searchParams.get("lon");
+  const paramCountry = searchParams.get("country");
+
+  const headerLat = request.headers.get("x-vercel-ip-latitude");
+  const headerLon = request.headers.get("x-vercel-ip-longitude");
+  const headerCountry = request.headers.get("x-vercel-ip-country") || request.headers.get("cf-ipcountry");
+
+  const userLat = paramLat ? parseFloat(paramLat) : headerLat ? parseFloat(headerLat) : undefined;
+  const userLon = paramLon ? parseFloat(paramLon) : headerLon ? parseFloat(headerLon) : undefined;
+  const userCountry = paramCountry || headerCountry || undefined;
+
   const suggestions: SearchSuggestion[] = [];
   const seen = new Set<string>();
 
@@ -82,19 +195,34 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const key = `${item.name.toLowerCase()}::${item.region.toLowerCase()}::${item.country.toLowerCase()}`;
     if (!seen.has(key)) {
       seen.add(key);
+
+      // Compute distance if user coordinates are known
+      if (
+        userLat !== undefined &&
+        userLon !== undefined &&
+        !isNaN(userLat) &&
+        !isNaN(userLon) &&
+        item.latitude &&
+        item.longitude
+      ) {
+        const dist = calculateDistanceKm(userLat, userLon, item.latitude, item.longitude);
+        item.distanceKm = Math.round(dist);
+        item.isNearby = dist < 200;
+      }
+
       suggestions.push(item);
     }
   };
 
   const tasks: Promise<void>[] = [];
 
-  // 1. Query Open-Meteo Geocoding
+  // 1. Query Open-Meteo Geocoding with higher limit for rich candidate pool
   tasks.push(
     (async () => {
       try {
         const url = new URL("https://geocoding-api.open-meteo.com/v1/search");
         url.searchParams.set("name", query);
-        url.searchParams.set("count", "8");
+        url.searchParams.set("count", "25");
         url.searchParams.set("language", "en");
         url.searchParams.set("format", "json");
 
@@ -172,20 +300,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   await Promise.allSettled(tasks);
 
-  // Sort: prioritize items that start with the query, then by shortest name
-  const lowerQ = query.toLowerCase();
+  // Smart relevance sorting: proximity to user + text prefix + country match
   suggestions.sort((a, b) => {
-    const aStarts = a.name.toLowerCase().startsWith(lowerQ);
-    const bStarts = b.name.toLowerCase().startsWith(lowerQ);
-    if (aStarts && !bStarts) return -1;
-    if (!aStarts && bStarts) return 1;
-    return a.name.length - b.name.length;
+    const scoreA = getRelevanceScore(a, query, userLat, userLon, userCountry);
+    const scoreB = getRelevanceScore(b, query, userLat, userLon, userCountry);
+    return scoreB - scoreA;
   });
 
   return jsonResponse(
     {
       status: "success",
       query,
+      userLocationApplied: Boolean(userLat && userLon),
       suggestions: suggestions.slice(0, 8),
     },
     {

@@ -80,46 +80,29 @@ export function WeatherSkeleton() {
         </div>
       </div>
 
-      {/* Row 1: Hourly Forecast (2 Cols) + Doppler Radar (2 Cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-surface-container-low/70 backdrop-blur-xl p-5 shadow-xl border border-white/[0.04]">
-          {shimmer}
-          <div className="flex items-center justify-between pb-4">
-            <div className="w-36 h-4 rounded bg-surface-container-high relative overflow-hidden">
-              {shimmer}
-            </div>
-            <div className="w-20 h-4 rounded bg-surface-container-high/60 relative overflow-hidden">
-              {shimmer}
-            </div>
-          </div>
-          <div className="flex items-center gap-3 overflow-hidden pt-1">
-            {[0, 1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="flex-shrink-0 w-20 py-4 px-2 rounded-xl bg-surface-container/60 flex flex-col items-center gap-2 relative overflow-hidden"
-              >
-                {shimmer}
-                <div className="w-10 h-3 rounded bg-surface-container-highest/80" />
-                <div className="w-7 h-7 rounded-full bg-surface-container-high" />
-                <div className="w-8 h-4 rounded bg-surface-container-highest" />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-surface-container-low/70 backdrop-blur-xl p-5 shadow-xl border border-white/[0.04]">
-          {shimmer}
-          <div className="flex items-center justify-between pb-3">
-            <div className="w-40 h-4 rounded bg-surface-container-high relative overflow-hidden">
-              {shimmer}
-            </div>
-            <div className="w-16 h-4 rounded bg-surface-container-high/60 relative overflow-hidden">
-              {shimmer}
-            </div>
-          </div>
-          <div className="w-full h-32 rounded-xl bg-surface-container-high/60 relative overflow-hidden">
+      {/* Full-width 24-Hour Hourly Forecast Skeleton */}
+      <div className="w-full relative overflow-hidden rounded-2xl bg-surface-container-low/70 backdrop-blur-xl p-5 shadow-xl border border-white/[0.04]">
+        {shimmer}
+        <div className="flex items-center justify-between pb-4">
+          <div className="w-40 h-4 rounded bg-surface-container-high relative overflow-hidden">
             {shimmer}
           </div>
+          <div className="w-28 h-4 rounded bg-surface-container-high/60 relative overflow-hidden">
+            {shimmer}
+          </div>
+        </div>
+        <div className="flex items-center gap-3 overflow-hidden pt-1">
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 w-20 py-4 px-2 rounded-xl bg-surface-container/60 flex flex-col items-center gap-2 relative overflow-hidden"
+            >
+              {shimmer}
+              <div className="w-10 h-3 rounded bg-surface-container-highest/80" />
+              <div className="w-7 h-7 rounded-full bg-surface-container-high" />
+              <div className="w-8 h-4 rounded bg-surface-container-highest" />
+            </div>
+          ))}
         </div>
       </div>
 
