@@ -11,7 +11,7 @@
 
 A fast, modern, and privacy-friendly global weather web application and public REST API. Designed with premium glassmorphism, dynamic GSAP atmospheric motion scenes, real-time astronomical solar cycle tracking, and smart location-first search.
 
-[**Live Web App**](https://weather.maybesurya.dev) • [**Developer Docs**](https://docs.maybesurya.dev) • [**API Endpoint**](https://weather.maybesurya.dev/api/weather)
+[**Live Web App**](https://weather.maybesurya.dev) • [**Developer Docs**](https://docs.maybesurya.dev/weather/overview) • [**API Endpoint**](https://weather.maybesurya.dev/api/weather)
 
 <br />
 
@@ -44,7 +44,7 @@ A fast, modern, and privacy-friendly global weather web application and public R
 | **Web Application** | [https://weather.maybesurya.dev](https://weather.maybesurya.dev) |
 | **Public Weather API** | [https://weather.maybesurya.dev/api/weather](https://weather.maybesurya.dev/api/weather) |
 | **Location Autocomplete API** | [https://weather.maybesurya.dev/api/weather/search](https://weather.maybesurya.dev/api/weather/search) |
-| **Documentation** | [https://docs.maybesurya.dev](https://docs.maybesurya.dev) |
+| **Documentation** | [https://docs.maybesurya.dev/weather/overview](https://docs.maybesurya.dev/weather/overview) |
 | **API Directory** | [https://apis.maybesurya.dev/weather](https://apis.maybesurya.dev/weather) |
 
 ---

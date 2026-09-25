@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/weather/api",
-        destination: "https://docs.maybesurya.dev",
+        destination: "https://docs.maybesurya.dev/weather/overview",
         permanent: true,
       },
     ];

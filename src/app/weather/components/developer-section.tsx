@@ -125,7 +125,7 @@ export function DeveloperSection({ activeCity }: DeveloperSectionProps) {
             <div className="bg-surface-container/40 p-2.5 rounded-lg border border-white/[0.02]">
               <span className="text-outline block text-[10px] uppercase font-semibold">Documentation</span>
               <a
-                href="https://docs.maybesurya.dev"
+                href="https://docs.maybesurya.dev/weather/overview"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline font-semibold flex items-center gap-1"

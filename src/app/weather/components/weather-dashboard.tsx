@@ -253,7 +253,7 @@ export function WeatherDashboard() {
 
             {/* API Docs Button */}
             <a
-              href="https://docs.maybesurya.dev"
+              href="https://docs.maybesurya.dev/weather/overview"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-semibold transition-colors"
@@ -452,7 +452,7 @@ export function WeatherDashboard() {
                 Search Any City
               </button>
               <a
-                href="https://docs.maybesurya.dev"
+                href="https://docs.maybesurya.dev/weather/overview"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-on-surface-variant hover:text-primary transition-colors"
