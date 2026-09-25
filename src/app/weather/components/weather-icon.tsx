@@ -78,7 +78,7 @@ export function WeatherIcon({
   if (n.includes("cloud") || n.includes("overcast")) {
     return <Cloud className={className} {...props} />;
   }
-  if (n.includes("night") || n === "bedtime" || n === "clear_night") {
+  if (n.includes("night") || n === "bedtime" || n === "clear_night" || n === "moon") {
     return <Moon className={className} {...props} />;
   }
   if (n === "wb_twilight" || n === "sunrise") {

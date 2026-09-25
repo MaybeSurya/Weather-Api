@@ -93,8 +93,8 @@ export function WeatherDashboard() {
                 <span className="font-display text-[17px] font-semibold text-on-surface tracking-tight group-hover:text-primary transition-colors">
                   Maybesurya Weather
                 </span>
-                <span className="text-[11px] font-bold text-primary uppercase tracking-widest">
-                  Atmospheric Core
+                <span className="text-[11px] font-semibold text-primary">
+                  Live Weather &amp; Forecasts
                 </span>
               </div>
             </Link>
@@ -110,14 +110,14 @@ export function WeatherDashboard() {
                     : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
                 }`}
               >
-                Live Overview
+                Overview
               </button>
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer"
               >
-                Radar &amp; Wind
+                Hourly Forecast
               </button>
               <button
                 type="button"
@@ -131,7 +131,7 @@ export function WeatherDashboard() {
                 onClick={() => setIsSearchOpen(true)}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all cursor-pointer"
               >
-                Alerts
+                Search Locations
               </button>
             </nav>
           </div>
@@ -240,7 +240,7 @@ export function WeatherDashboard() {
       <footer className="relative z-10 w-full bg-surface-container-lowest/90 backdrop-blur-md border-t border-white/[0.04] mt-auto shadow-[0_-1px_12px_rgba(0,0,0,0.5)]">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-10">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8">
-            {/* Col 1: Brand & Live Satellite Feed info */}
+            {/* Col 1: Brand & Plain English description */}
             <div className="space-y-3 md:col-span-2">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
@@ -251,21 +251,71 @@ export function WeatherDashboard() {
                 </span>
               </div>
               <p className="text-xs text-on-surface-variant max-w-sm leading-relaxed">
-                High-fidelity atmospheric telemetry engine delivering micro-forecasts, real-time Doppler radar kinematics, and planetary air monitoring.
+                Simple, accurate, and real-time weather forecasts, 24-hour hourly outlooks, and clear meteorological data for cities worldwide.
               </p>
-              <div className="flex items-center gap-2 pt-1">
-                <span className="w-2 h-2 rounded-full bg-primary-container animate-pulse" />
-                <span className="text-xs text-on-surface-variant font-mono">
-                  Satellite feed live: Station 904-Omega
-                </span>
+              {/* Mandatory Provider Attribution */}
+              <div className="pt-2 text-xs text-on-surface-variant leading-relaxed">
+                <span className="text-on-surface font-semibold">Weather Data Sources:</span>{" "}
+                Powered by{" "}
+                <a
+                  href="https://open-meteo.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Open-Meteo
+                </a>{" "}
+                (licensed under{" "}
+                <a
+                  href="https://creativecommons.org/licenses/by/4.0/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium"
+                >
+                  CC BY 4.0
+                </a>
+                ),{" "}
+                <a
+                  href="https://www.met.no/en"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium"
+                >
+                  MET Norway
+                </a>
+                , and{" "}
+                <a
+                  href="https://www.weatherapi.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium"
+                >
+                  WeatherAPI
+                </a>
+                .
               </div>
             </div>
 
             {/* Col 2: Resources */}
             <div className="flex flex-col gap-2 text-xs">
               <span className="font-bold text-outline uppercase tracking-wider text-[11px] mb-1">
-                Resources
+                Explore
               </span>
+              <a
+                href="https://weather.maybesurya.dev/api/weather"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-on-surface-variant hover:text-primary transition-colors"
+              >
+                Weather REST API
+              </a>
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="text-left text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+              >
+                Search Any City
+              </button>
               <a
                 href="https://docs.maybesurya.dev"
                 target="_blank"
@@ -274,72 +324,56 @@ export function WeatherDashboard() {
               >
                 Documentation
               </a>
-              <a
-                href="https://docs.maybesurya.dev"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-on-surface-variant hover:text-primary transition-colors"
-              >
-                API Endpoints
-              </a>
-              <button
-                type="button"
-                onClick={() => setIsSearchOpen(true)}
-                className="text-left text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
-              >
-                Observatory Feeds
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsSearchOpen(true)}
-                className="text-left text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
-              >
-                Alert Webhooks
-              </button>
             </div>
 
-            {/* Col 3: Ecosystem */}
+            {/* Col 3: Links */}
             <div className="flex flex-col gap-2 text-xs">
               <span className="font-bold text-outline uppercase tracking-wider text-[11px] mb-1">
-                Ecosystem
+                Project &amp; Code
               </span>
-              <a
-                href="https://docs.maybesurya.dev"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-on-surface-variant hover:text-primary transition-colors"
-              >
-                Release Notes
-              </a>
               <a
                 href="https://github.com/maybesurya"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-on-surface-variant hover:text-primary transition-colors"
               >
-                GitHub Repository
+                GitHub Profile
               </a>
-              <button
-                type="button"
-                onClick={() => setIsSearchOpen(true)}
-                className="text-left text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
-              >
-                Telemetry Nodes
-              </button>
               <a
-                href="https://apis.maybesurya.dev"
+                href="https://open-meteo.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-on-surface-variant hover:text-primary transition-colors"
               >
-                System Status
+                Open-Meteo Project
+              </a>
+              <a
+                href="https://www.met.no/en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-on-surface-variant hover:text-primary transition-colors"
+              >
+                MET Norway Open Data
               </a>
             </div>
           </div>
 
           {/* Bottom Bar */}
           <div className="pt-6 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-outline">
-            <span>© 2025 Maybesurya Weather. Crafted with computational precision.</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span>© 2025 Maybesurya Weather.</span>
+              <span className="text-on-surface-variant font-sans font-medium">
+                Made with ❤️ by{" "}
+                <a
+                  href="https://github.com/maybesurya"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-semibold"
+                >
+                  maybesurya
+                </a>
+              </span>
+            </div>
             <div className="flex items-center gap-6">
               <a
                 href="https://github.com/maybesurya"
@@ -357,11 +391,11 @@ export function WeatherDashboard() {
                 className="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1.5"
               >
                 <WeatherIcon name="globe" className="w-3.5 h-3.5" />
-                <span>REST APIs</span>
+                <span>API</span>
               </a>
               <span className="text-on-surface-variant flex items-center gap-1.5">
                 <WeatherIcon name="cloud_sync" className="w-3.5 h-3.5" />
-                <span>Telemetry v4.2</span>
+                <span>Live Data</span>
               </span>
             </div>
           </div>
