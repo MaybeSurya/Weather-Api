@@ -1,5 +1,7 @@
 "use client";
 
+import { WeatherIcon } from "./weather-icon";
+
 interface WeatherErrorProps {
   city: string;
   errorMessage: string;
@@ -28,9 +30,7 @@ export function WeatherErrorConsole({
       {/* Top Metadata / Context Ribbon */}
       <div className="flex flex-wrap items-center justify-between gap-2 py-1 text-outline font-mono text-xs">
         <div className="flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-[16px] text-tertiary">
-            warning
-          </span>
+          <WeatherIcon name="warning" className="w-4 h-4 text-tertiary" />
           <span className="uppercase tracking-wider">
             TELEMETRY FAULT: GEO-RESOLUTION CODE 404
           </span>
@@ -71,9 +71,7 @@ export function WeatherErrorConsole({
 
               {/* Center Glyph */}
               <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-surface-container-high text-primary shadow-md">
-                <span className="material-symbols-outlined text-[34px]">
-                  cloud_off
-                </span>
+                <WeatherIcon name="cloud_off" className="w-8 h-8 text-primary" />
                 <span className="absolute -top-1 -right-1 flex h-4 w-4">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75" />
                   <span className="relative inline-flex rounded-full h-4 w-4 bg-tertiary text-on-tertiary items-center justify-center text-[10px] font-bold">
@@ -86,7 +84,7 @@ export function WeatherErrorConsole({
 
           {/* Telemetry Pill Tag */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-tertiary text-[11px] font-semibold uppercase tracking-wider mb-4 shadow-sm">
-            <span className="material-symbols-outlined text-[14px]">radar</span>
+            <WeatherIcon name="radar" className="w-3.5 h-3.5" />
             <span>Atmospheric Signal Unresolved</span>
           </div>
 
@@ -115,7 +113,7 @@ export function WeatherErrorConsole({
               onClick={onOpenSearch}
               className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary-container text-on-primary-container font-semibold text-sm hover:opacity-95 active:scale-95 transition-all shadow-md cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[20px]">search</span>
+              <WeatherIcon name="search" className="w-5 h-5" />
               <span>Try Another Search</span>
             </button>
             <button
@@ -123,7 +121,7 @@ export function WeatherErrorConsole({
               onClick={onRetry}
               className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-medium text-sm transition-all shadow-sm cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[20px] text-primary">my_location</span>
+              <WeatherIcon name="navigation" className="w-5 h-5 text-primary" />
               <span>Use Current Location</span>
             </button>
           </div>
@@ -141,9 +139,7 @@ export function WeatherErrorConsole({
                   onClick={() => onSelectCity(node.name)}
                   className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium transition-all group shadow-sm cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[16px] text-primary group-hover:scale-110 transition-transform">
-                    location_on
-                  </span>
+                  <WeatherIcon name="location_on" className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
                   <span className="font-medium">{node.name}</span>
                   <span className="text-on-surface-variant font-mono">{node.temp}</span>
                 </button>
@@ -176,7 +172,7 @@ export function WeatherErrorConsole({
         <div className="md:col-span-2 rounded-2xl bg-surface-container-low p-6 flex flex-col justify-between shadow-lg relative overflow-hidden border border-white/[0.04]">
           <div className="flex items-center justify-between gap-4 mb-2">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-[20px]">public</span>
+              <WeatherIcon name="globe" className="w-5 h-5 text-primary" />
               <span className="font-display font-semibold text-on-surface text-base">Global Satellite Stream</span>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-surface-container-high text-primary uppercase tracking-wider">
@@ -200,7 +196,7 @@ export function WeatherErrorConsole({
                 className="text-xs font-semibold text-primary hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <span>Open Interactive View</span>
-                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                <WeatherIcon name="arrow_forward" className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -209,7 +205,7 @@ export function WeatherErrorConsole({
         {/* Search Guidance Card */}
         <div className="rounded-2xl bg-surface-container-low p-6 flex flex-col justify-between shadow-lg border border-white/[0.04]">
           <div className="flex items-center gap-2 mb-3">
-            <span className="material-symbols-outlined text-primary text-[20px]">lightbulb</span>
+            <WeatherIcon name="lightbulb" className="w-5 h-5 text-primary" />
             <span className="font-display font-semibold text-on-surface text-base">Search Guidance</span>
           </div>
           <ul className="text-xs text-on-surface-variant space-y-2.5 leading-relaxed">
@@ -235,7 +231,7 @@ export function WeatherErrorConsole({
               className="text-primary hover:underline font-semibold flex items-center gap-0.5"
             >
               <span>API Spec v4</span>
-              <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+              <WeatherIcon name="arrow_forward" className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>

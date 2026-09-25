@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type { SearchSuggestion } from "@/app/api/weather/search/route";
+import { WeatherIcon } from "./weather-icon";
 
 interface WeatherSearchModalProps {
   isOpen: boolean;
@@ -181,9 +182,7 @@ export function WeatherSearchModal({
       >
         {/* Input Header Strip */}
         <div className="relative flex items-center px-4 sm:px-6 py-4 bg-surface-container-highest/50 gap-3 border-b border-white/[0.06]">
-          <span className="material-symbols-outlined text-primary text-[22px] shrink-0">
-            search
-          </span>
+          <WeatherIcon name="search" className="w-5 h-5 text-primary shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -233,7 +232,7 @@ export function WeatherSearchModal({
               className="w-7 h-7 rounded-lg bg-surface-container hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors shrink-0 cursor-pointer"
               aria-label="Clear input"
             >
-              <span className="material-symbols-outlined text-[16px]">close</span>
+              <WeatherIcon name="close" className="w-4 h-4" />
             </button>
           )}
 
@@ -248,7 +247,7 @@ export function WeatherSearchModal({
         {/* Quick Telemetry & Recent Searches Filter Row */}
         <div className="px-4 sm:px-6 py-2.5 bg-surface-container-low/70 flex flex-wrap items-center gap-2 border-b border-white/[0.04]">
           <span className="text-[11px] font-semibold text-outline uppercase tracking-wider shrink-0 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[13px] text-primary">history</span>
+            <WeatherIcon name="history" className="w-3.5 h-3.5 text-primary" />
             Recent
           </span>
           <div className="flex flex-wrap items-center gap-1.5 overflow-hidden">
@@ -292,9 +291,7 @@ export function WeatherSearchModal({
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shrink-0">
-                      <span className="material-symbols-outlined text-[20px]">
-                        location_on
-                      </span>
+                      <WeatherIcon name="location_on" className="w-5 h-5" />
                     </div>
                     <div className="truncate">
                       <div className="flex items-center gap-1.5">
@@ -315,18 +312,14 @@ export function WeatherSearchModal({
                     <span className="text-xs font-mono text-outline hidden sm:inline-block">
                       Select ↵
                     </span>
-                    <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[20px]">
-                      arrow_forward
-                    </span>
+                    <WeatherIcon name="arrow_forward" className="w-5 h-5 text-outline group-hover:text-primary transition-colors" />
                   </div>
                 </button>
               );
             })
           ) : query.trim().length >= 2 && !isSearching ? (
             <div className="px-4 py-8 text-center text-on-surface-variant text-sm">
-              <span className="material-symbols-outlined text-3xl text-outline mb-2 block">
-                search_off
-              </span>
+              <WeatherIcon name="cloud_off" className="w-8 h-8 text-outline mb-2 mx-auto block" />
               No matching locations found for &quot;{query}&quot;. Press Enter to query directly.
             </div>
           ) : (
@@ -346,9 +339,7 @@ export function WeatherSearchModal({
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shrink-0">
-                      <span className="material-symbols-outlined text-[20px]">
-                        {item.icon}
-                      </span>
+                      <WeatherIcon name={item.icon} className="w-5 h-5" />
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
@@ -370,9 +361,7 @@ export function WeatherSearchModal({
                       <div className="text-sm font-bold text-on-surface font-mono">{item.temp}</div>
                       <div className="text-[10px] text-outline font-mono">{item.highLow}</div>
                     </div>
-                    <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[20px]">
-                      arrow_forward
-                    </span>
+                    <WeatherIcon name="arrow_forward" className="w-5 h-5 text-outline group-hover:text-primary transition-colors" />
                   </div>
                 </button>
               );
@@ -383,7 +372,7 @@ export function WeatherSearchModal({
         {/* Global Synoptic Banner */}
         <div className="px-4 sm:px-6 py-3 bg-surface-container-low/90 flex items-center justify-between border-t border-white/[0.06]">
           <div className="flex items-center gap-2 text-xs text-on-surface-variant">
-            <span className="material-symbols-outlined text-[18px] text-primary">map</span>
+            <WeatherIcon name="map" className="w-[18px] h-[18px] text-primary" />
             <span>Global Synoptic Layer · Explore interactive precipitation &amp; thermal vectors</span>
           </div>
           <button
@@ -392,7 +381,7 @@ export function WeatherSearchModal({
             className="text-xs font-semibold text-primary hover:text-white flex items-center gap-0.5 cursor-pointer"
           >
             <span>Open Radar</span>
-            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+            <WeatherIcon name="arrow_forward" className="w-3.5 h-3.5" />
           </button>
         </div>
 

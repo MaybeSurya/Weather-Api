@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PublicWeatherSuccessResponse } from "@/lib/weather/types";
+import { WeatherIcon } from "./weather-icon";
 
 interface DeveloperSectionProps {
   data: PublicWeatherSuccessResponse;
@@ -32,7 +33,7 @@ export function DeveloperSection({ activeCity }: DeveloperSectionProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary shrink-0">
-            <span className="material-symbols-outlined text-[18px]">terminal</span>
+            <WeatherIcon name="terminal" className="w-[18px] h-[18px]" />
           </div>
           <div>
             <span className="font-display font-semibold text-on-surface text-base block">
@@ -55,7 +56,7 @@ export function DeveloperSection({ activeCity }: DeveloperSectionProps) {
             className="text-primary hover:underline text-xs font-semibold flex items-center gap-1 transition-colors"
           >
             <span>Docs</span>
-            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+            <WeatherIcon name="arrow_forward" className="w-3.5 h-3.5" />
           </a>
         </div>
       </div>
@@ -69,9 +70,10 @@ export function DeveloperSection({ activeCity }: DeveloperSectionProps) {
             onClick={handleCopy}
             className="text-primary hover:text-on-surface transition-colors flex items-center gap-1 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[14px]">
-              {copied ? "check" : "content_copy"}
-            </span>
+            <WeatherIcon
+              name={copied ? "check" : "copy"}
+              className="w-3.5 h-3.5"
+            />
             <span>{copied ? "Copied" : "Copy"}</span>
           </button>
         </div>

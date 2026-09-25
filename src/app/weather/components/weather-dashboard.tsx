@@ -11,6 +11,7 @@ import { WeatherSearchModal } from "./weather-search-modal";
 import { DeveloperSection } from "./developer-section";
 import { WeatherSkeleton } from "./weather-skeleton";
 import { WeatherErrorConsole } from "./weather-error";
+import { WeatherIcon } from "./weather-icon";
 
 export function WeatherDashboard() {
   const [data, setData] = useState<PublicWeatherSuccessResponse | null>(null);
@@ -86,7 +87,7 @@ export function WeatherDashboard() {
           <div className="flex items-center gap-6 shrink-0">
             <Link href="/" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors shadow-[0_0_16px_rgba(56,189,248,0.15)]">
-                <span className="material-symbols-outlined text-[24px]">cloud</span>
+                <WeatherIcon name="cloud" className="w-5 h-5 text-current" />
               </div>
               <div className="flex flex-col">
                 <span className="font-display text-[17px] font-semibold text-on-surface tracking-tight group-hover:text-primary transition-colors">
@@ -143,9 +144,7 @@ export function WeatherDashboard() {
               className="w-full flex items-center justify-between pl-3 pr-2 py-2 bg-surface-container-high/60 hover:bg-surface-container-high text-on-surface rounded-xl transition-all border border-white/[0.04] text-xs group cursor-pointer"
             >
               <div className="flex items-center gap-2.5 text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px] text-primary group-hover:scale-110 transition-transform">
-                  search
-                </span>
+                <WeatherIcon name="search" className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
                 <span className="truncate">
                   {data?.location?.city ? `${data.location.city}, ${data.location.country}` : "Search city or airport..."}
                 </span>
@@ -191,7 +190,7 @@ export function WeatherDashboard() {
               className="md:hidden p-2 rounded-xl bg-surface-container-high text-on-surface hover:text-white cursor-pointer"
               aria-label="Search"
             >
-              <span className="material-symbols-outlined text-[18px]">search</span>
+              <WeatherIcon name="search" className="w-4 h-4" />
             </button>
 
             {/* API Docs Button */}
@@ -201,15 +200,13 @@ export function WeatherDashboard() {
               rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-semibold transition-colors"
             >
-              <span className="material-symbols-outlined text-[18px]">code</span>
+              <WeatherIcon name="code" className="w-4 h-4 text-primary" />
               <span>API Docs</span>
             </a>
 
             {/* Profile Avatar Circle */}
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm">
-              <span className="material-symbols-outlined text-on-primary text-[18px]">
-                person
-              </span>
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm text-on-primary">
+              <WeatherIcon name="user" className="w-4 h-4 text-on-primary" />
             </div>
           </div>
         </div>
@@ -247,7 +244,7 @@ export function WeatherDashboard() {
             <div className="space-y-3 md:col-span-2">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined text-[20px]">cloud</span>
+                  <WeatherIcon name="cloud" className="w-5 h-5" />
                 </div>
                 <span className="font-display font-semibold text-on-surface tracking-tight text-base">
                   Maybesurya Weather
@@ -350,7 +347,7 @@ export function WeatherDashboard() {
                 rel="noopener noreferrer"
                 className="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1.5"
               >
-                <span className="material-symbols-outlined text-[15px]">terminal</span>
+                <WeatherIcon name="terminal" className="w-3.5 h-3.5" />
                 <span>GitHub</span>
               </a>
               <a
@@ -359,11 +356,11 @@ export function WeatherDashboard() {
                 rel="noopener noreferrer"
                 className="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1.5"
               >
-                <span className="material-symbols-outlined text-[15px]">api</span>
+                <WeatherIcon name="globe" className="w-3.5 h-3.5" />
                 <span>REST APIs</span>
               </a>
               <span className="text-on-surface-variant flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[15px]">cloud_sync</span>
+                <WeatherIcon name="cloud_sync" className="w-3.5 h-3.5" />
                 <span>Telemetry v4.2</span>
               </span>
             </div>

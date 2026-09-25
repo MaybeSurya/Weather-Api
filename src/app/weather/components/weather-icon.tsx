@@ -1,178 +1,127 @@
-/**
- * WeatherIcon — tasteful animated SVG icons for normalized weather conditions.
- * Uses inline SVG with CSS micro-animations for rich, responsive motion.
- * Icons are purely presentational — no semantic content.
- */
+"use client";
 
-interface WeatherIconProps {
-  description: string;
-  className?: string;
+import {
+  Sun,
+  CloudSun,
+  Cloud,
+  CloudRain,
+  CloudDrizzle,
+  CloudLightning,
+  CloudSnow,
+  CloudFog,
+  Moon,
+  Sunrise,
+  Sunset,
+  Wind,
+  Droplet,
+  Droplets,
+  Eye,
+  Compass,
+  Calendar,
+  Radar,
+  Radio,
+  Gauge,
+  Leaf,
+  Terminal,
+  Copy,
+  Check,
+  Search,
+  MapPin,
+  Map,
+  X,
+  History,
+  AlertTriangle,
+  CloudOff,
+  Navigation,
+  Globe,
+  Lightbulb,
+  ArrowRight,
+  ArrowUpRight,
+  User,
+  Activity,
+  Code,
+  type LucideProps,
+} from "lucide-react";
+
+interface WeatherIconProps extends LucideProps {
+  name?: string;
+  description?: string;
 }
 
-/**
- * Maps a condition description to an animated SVG icon.
- * Matching is case-insensitive and substring-based so it works across providers.
- */
-export function WeatherIcon({ description, className = "w-12 h-12" }: WeatherIconProps) {
-  const desc = description.toLowerCase();
+export function WeatherIcon({
+  name,
+  description,
+  className = "w-5 h-5",
+  ...props
+}: WeatherIconProps) {
+  const n = (name || description || "").toLowerCase();
 
-  // Thunderstorm
-  if (desc.includes("thunder") || desc.includes("storm")) {
-    return (
-      <svg className={`${className} filter drop-shadow-[0_0_12px_rgba(250,204,21,0.35)]`} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        <path
-          d="M52 26c0-9.94-8.06-18-18-18-7.86 0-14.57 5.04-17.04 12.12C10.68 21.16 6 26.4 6 32.5 6 39.4 11.6 45 18.5 45H52c4.97 0 9-4.03 9-9s-4.03-9-9-9z"
-          fill="currentColor"
-          className="text-slate-400/40 animate-cloud-drift"
-        />
-        <path
-          d="M35 34l-7 14h5l-6 12 14-17h-6l7-9z"
-          fill="currentColor"
-          className="text-yellow-400 animate-pulse-glow"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
+  // Condition mapping
+  if (n.includes("thunder") || n.includes("storm") || n === "thunderstorm") {
+    return <CloudLightning className={className} {...props} />;
+  }
+  if (n.includes("snow") || n.includes("ice") || n.includes("blizzard") || n === "ac_unit" || n === "cloudy_snowing") {
+    return <CloudSnow className={className} {...props} />;
+  }
+  if (n.includes("drizzle")) {
+    return <CloudDrizzle className={className} {...props} />;
+  }
+  if (n.includes("rain") || n.includes("shower") || n.includes("monsoon") || n === "rainy") {
+    return <CloudRain className={className} {...props} />;
+  }
+  if (n.includes("fog") || n.includes("mist") || n.includes("haze") || n === "foggy") {
+    return <CloudFog className={className} {...props} />;
+  }
+  if (n.includes("partly") || n.includes("mostly") || n === "partly_cloudy_day" || n === "break") {
+    return <CloudSun className={className} {...props} />;
+  }
+  if (n.includes("cloud") || n.includes("overcast")) {
+    return <Cloud className={className} {...props} />;
+  }
+  if (n.includes("night") || n === "bedtime" || n === "clear_night") {
+    return <Moon className={className} {...props} />;
+  }
+  if (n === "wb_twilight" || n === "sunrise") {
+    return <Sunrise className={className} {...props} />;
+  }
+  if (n === "sunset") {
+    return <Sunset className={className} {...props} />;
+  }
+  if (n === "wb_sunny" || n === "sun" || n.includes("clear") || n.includes("sunny")) {
+    return <Sun className={className} {...props} />;
   }
 
-  // Snow
-  if (desc.includes("snow") || desc.includes("blizzard")) {
-    return (
-      <svg className={className} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        <path
-          d="M48 24c0-8.84-7.16-16-16-16-7.02 0-12.96 4.52-15.14 10.82C10.78 19.7 6 24.96 6 31.25 6 37.76 11.24 43 17.75 43H48c4.42 0 8-3.58 8-8s-3.58-8-8-8z"
-          fill="currentColor"
-          className="text-slate-300/40 animate-cloud-drift"
-        />
-        <circle cx="22" cy="50" r="2.5" fill="currentColor" className="text-sky-200 animate-rain-fall" />
-        <circle cx="32" cy="54" r="3" fill="currentColor" className="text-sky-200 animate-rain-fall [animation-delay:0.3s]" />
-        <circle cx="42" cy="50" r="2.5" fill="currentColor" className="text-sky-200 animate-rain-fall [animation-delay:0.6s]" />
-        <circle cx="27" cy="58" r="2" fill="currentColor" className="text-sky-300/70 animate-rain-fall [animation-delay:0.9s]" />
-        <circle cx="37" cy="58" r="2" fill="currentColor" className="text-sky-300/70 animate-rain-fall [animation-delay:0.4s]" />
-      </svg>
-    );
-  }
+  // Meteorological telemetry icons
+  if (n === "location_on" || n === "pin") return <MapPin className={className} {...props} />;
+  if (n === "schedule" || n === "clock") return <Calendar className={className} {...props} />;
+  if (n === "calendar_month" || n === "calendar") return <Calendar className={className} {...props} />;
+  if (n === "water_drop" || n === "droplet") return <Droplet className={className} {...props} />;
+  if (n === "humidity" || n === "humidity_percentage" || n === "droplets") return <Droplets className={className} {...props} />;
+  if (n === "air" || n === "wind") return <Wind className={className} {...props} />;
+  if (n === "navigation" || n === "my_location") return <Navigation className={className} {...props} />;
+  if (n === "compass") return <Compass className={className} {...props} />;
+  if (n === "visibility" || n === "eye") return <Eye className={className} {...props} />;
+  if (n === "radar") return <Radar className={className} {...props} />;
+  if (n === "grain" || n === "station" || n === "radio") return <Radio className={className} {...props} />;
+  if (n === "pressure" || n === "gauge") return <Gauge className={className} {...props} />;
+  if (n === "eco" || n === "leaf") return <Leaf className={className} {...props} />;
+  if (n === "search") return <Search className={className} {...props} />;
+  if (n === "close" || n === "x") return <X className={className} {...props} />;
+  if (n === "history") return <History className={className} {...props} />;
+  if (n === "map") return <Map className={className} {...props} />;
+  if (n === "terminal") return <Terminal className={className} {...props} />;
+  if (n === "copy" || n === "content_copy") return <Copy className={className} {...props} />;
+  if (n === "check") return <Check className={className} {...props} />;
+  if (n === "crisis_alert" || n === "alert" || n === "warning") return <AlertTriangle className={className} {...props} />;
+  if (n === "cloud_off") return <CloudOff className={className} {...props} />;
+  if (n === "arrow_forward" || n === "arrow_right") return <ArrowRight className={className} {...props} />;
+  if (n === "open" || n === "arrow_up_right") return <ArrowUpRight className={className} {...props} />;
+  if (n === "user" || n === "person") return <User className={className} {...props} />;
+  if (n === "activity" || n === "cloud_sync") return <Activity className={className} {...props} />;
+  if (n === "code") return <Code className={className} {...props} />;
+  if (n === "globe" || n === "api" || n === "public") return <Globe className={className} {...props} />;
+  if (n === "lightbulb") return <Lightbulb className={className} {...props} />;
 
-  // Rain (includes freezing rain, drizzle, showers)
-  if (
-    desc.includes("rain") ||
-    desc.includes("drizzle") ||
-    desc.includes("shower") ||
-    desc.includes("freezing")
-  ) {
-    return (
-      <svg className={className} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        <path
-          d="M46 22c0-8.28-6.72-15-15-15-6.58 0-12.16 4.24-14.22 10.16C10.14 18.16 6 22.9 6 28.5 6 34.3 10.7 39 16.5 39H46c4.14 0 7.5-3.36 7.5-7.5S50.14 24 46 24v-2z"
-          fill="currentColor"
-          className="text-slate-400/40 animate-cloud-drift"
-        />
-        <line x1="22" y1="44" x2="19" y2="52" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-sky-400 animate-rain-fall" />
-        <line x1="32" y1="46" x2="29" y2="54" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-sky-400 animate-rain-fall [animation-delay:0.3s]" />
-        <line x1="42" y1="44" x2="39" y2="52" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-sky-400 animate-rain-fall [animation-delay:0.6s]" />
-      </svg>
-    );
-  }
-
-  // Fog / Mist
-  if (desc.includes("fog") || desc.includes("mist") || desc.includes("haze")) {
-    return (
-      <svg className={className} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        <line x1="10" y1="26" x2="54" y2="26" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-white/40 animate-cloud-drift" />
-        <line x1="14" y1="34" x2="50" y2="34" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-white/30 animate-cloud-drift [animation-delay:0.5s]" />
-        <line x1="18" y1="42" x2="46" y2="42" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-white/20 animate-cloud-drift [animation-delay:1s]" />
-        <line x1="12" y1="18" x2="44" y2="18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-white/50 animate-cloud-drift [animation-delay:0.2s]" />
-      </svg>
-    );
-  }
-
-  // Overcast / Heavy cloud
-  if (desc.includes("overcast")) {
-    return (
-      <svg className={className} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        <path
-          d="M50 28c0-9.94-8.06-18-18-18-7.86 0-14.57 5.04-17.04 12.12C8.68 23.16 4 28.4 4 34.5 4 41.4 9.6 47 16.5 47H50c4.97 0 9-4.03 9-9s-4.03-9-9-9z"
-          fill="currentColor"
-          className="text-slate-300/35 animate-cloud-drift"
-        />
-        <path
-          d="M40 34c0-6.63-5.37-12-12-12-5.24 0-9.71 3.36-11.36 8.08C13.45 30.78 10 33.95 10 38c0 4.42 3.58 8 8 8h22c3.31 0 6-2.69 6-6s-2.69-6-6-6z"
-          fill="currentColor"
-          className="text-slate-400/50 animate-cloud-drift [animation-delay:0.6s]"
-        />
-      </svg>
-    );
-  }
-
-  // Partly cloudy
-  if (desc.includes("partly") || desc.includes("mostly")) {
-    return (
-      <svg className={className} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        {/* Sun with rotating rays */}
-        <g className="origin-[22px_26px] animate-spin-slow">
-          <circle cx="22" cy="26" r="9" fill="currentColor" className="text-yellow-400/90" />
-          <line x1="22" y1="10" x2="22" y2="14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/70" />
-          <line x1="22" y1="38" x2="22" y2="42" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/70" />
-          <line x1="6" y1="26" x2="10" y2="26" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/70" />
-          <line x1="34" y1="26" x2="38" y2="26" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/70" />
-        </g>
-        {/* Cloud overlay drifting */}
-        <path
-          d="M50 34c0-7.18-5.82-13-13-13-4.52 0-8.48 2.32-10.82 5.82C22.78 26.42 20 28.7 20 32c0 4.42 3.58 8 8 8h22c3.31 0 6-2.69 6-6s-2.69-6-6-6z"
-          fill="currentColor"
-          className="text-slate-300/40 animate-cloud-drift"
-        />
-      </svg>
-    );
-  }
-
-  // Cloudy
-  if (desc.includes("cloud")) {
-    return (
-      <svg className={className} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        <path
-          d="M46 26c0-8.84-7.16-16-16-16-7.02 0-12.96 4.52-15.14 10.82C8.78 21.7 4 26.96 4 33.25 4 39.76 9.24 45 15.75 45H46c4.42 0 8-3.58 8-8s-3.58-8-8-8z"
-          fill="currentColor"
-          className="text-slate-300/35 animate-cloud-drift"
-        />
-      </svg>
-    );
-  }
-
-  // Mainly clear
-  if (desc.includes("mainly")) {
-    return (
-      <svg className={className} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        <circle cx="32" cy="32" r="12" fill="currentColor" className="text-yellow-400 animate-pulse-glow" />
-        <g className="origin-[32px_32px] animate-spin-slow">
-          <line x1="32" y1="8" x2="32" y2="14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/60" />
-          <line x1="32" y1="50" x2="32" y2="56" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/60" />
-          <line x1="8" y1="32" x2="14" y2="32" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/60" />
-          <line x1="50" y1="32" x2="56" y2="32" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/60" />
-          <line x1="16" y1="16" x2="20" y2="20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/50" />
-          <line x1="44" y1="44" x2="48" y2="48" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/50" />
-          <line x1="48" y1="16" x2="44" y2="20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/50" />
-          <line x1="20" y1="44" x2="16" y2="48" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-yellow-400/50" />
-        </g>
-      </svg>
-    );
-  }
-
-  // Clear / Sunny (default for clear sky)
-  return (
-    <svg className={`${className} filter drop-shadow-[0_0_16px_rgba(250,204,21,0.25)]`} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <circle cx="32" cy="32" r="13" fill="currentColor" className="text-yellow-400 animate-pulse-glow" />
-      <g className="origin-[32px_32px] animate-spin-slow">
-        <line x1="32" y1="6" x2="32" y2="13" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-yellow-400/80" />
-        <line x1="32" y1="51" x2="32" y2="58" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-yellow-400/80" />
-        <line x1="6" y1="32" x2="13" y2="32" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-yellow-400/80" />
-        <line x1="51" y1="32" x2="58" y2="32" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-yellow-400/80" />
-        <line x1="14" y1="14" x2="19" y2="19" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-yellow-400/60" />
-        <line x1="45" y1="45" x2="50" y2="50" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-yellow-400/60" />
-        <line x1="50" y1="14" x2="45" y2="19" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-yellow-400/60" />
-        <line x1="19" y1="45" x2="14" y2="50" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-yellow-400/60" />
-      </g>
-    </svg>
-  );
+  // Default fallback
+  return <Cloud className={className} {...props} />;
 }

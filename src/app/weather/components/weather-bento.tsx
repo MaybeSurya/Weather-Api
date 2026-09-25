@@ -4,23 +4,12 @@ import type {
   PublicWeatherAttributes,
   PublicWeatherSuccessResponse,
 } from "@/lib/weather/types";
+import { WeatherIcon } from "./weather-icon";
 
 interface WeatherBentoProps {
   data: PublicWeatherSuccessResponse;
   isMetric: boolean;
   onOpenSearch: () => void;
-}
-
-function getConditionIcon(desc: string): string {
-  const d = desc.toLowerCase();
-  if (d.includes("thunder") || d.includes("storm")) return "thunderstorm";
-  if (d.includes("snow") || d.includes("ice") || d.includes("blizzard")) return "ac_unit";
-  if (d.includes("rain") || d.includes("drizzle") || d.includes("shower") || d.includes("monsoon")) return "rainy";
-  if (d.includes("fog") || d.includes("mist") || d.includes("haze")) return "foggy";
-  if (d.includes("partly") || d.includes("mostly")) return "partly_cloudy_day";
-  if (d.includes("cloud") || d.includes("overcast")) return "cloud";
-  if (d.includes("night")) return "bedtime";
-  return "wb_sunny";
 }
 
 function parseNumeric(val: string | number | undefined, fallback: number): number {
@@ -70,7 +59,6 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
     ? Math.round(currentTempC).toString()
     : Math.round((currentTempC * 9) / 5 + 32).toString();
 
-  const conditionIcon = getConditionIcon(weather.description);
   const isRainy =
     weather.description.toLowerCase().includes("rain") ||
     weather.description.toLowerCase().includes("storm") ||
@@ -79,7 +67,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
 
   // Hourly slots
   const hourlySlots = [
-    { label: "Now", temp: currentTempC, pop: isRainy ? "95%" : "0%", icon: conditionIcon, active: true },
+    { label: "Now", temp: currentTempC, pop: isRainy ? "95%" : "0%", icon: isRainy ? "rainy" : "sun", active: true },
     { label: "14:00", temp: currentTempC, pop: isRainy ? "90%" : "5%", icon: isRainy ? "thunderstorm" : "partly_cloudy_day" },
     { label: "15:00", temp: currentTempC - 1, pop: isRainy ? "85%" : "0%", icon: isRainy ? "rainy" : "wb_sunny" },
     { label: "16:00", temp: currentTempC - 1, pop: isRainy ? "70%" : "0%", icon: isRainy ? "rainy" : "wb_sunny" },
@@ -89,7 +77,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
 
   // 10-day forecast items
   const tenDayOutlook = [
-    { day: "Today", desc: isRainy ? "Heavy Rain" : "Clear Sky", min: lowTempC, max: highTempC, icon: conditionIcon, pct: 90 },
+    { day: "Today", desc: isRainy ? "Heavy Rain" : "Clear Sky", min: lowTempC, max: highTempC, icon: isRainy ? "rainy" : "sun", pct: 90 },
     { day: "Wed 18", desc: isRainy ? "Monsoon" : "Partly Cloudy", min: lowTempC + 1, max: highTempC, icon: isRainy ? "thunderstorm" : "partly_cloudy_day", pct: 75 },
     { day: "Thu 19", desc: isRainy ? "Showers" : "Clear Sky", min: lowTempC + 1, max: highTempC + 1, icon: isRainy ? "rainy" : "wb_sunny", pct: 60 },
     { day: "Fri 20", desc: isRainy ? "Scattered" : "Sunny", min: lowTempC + 2, max: highTempC + 2, icon: isRainy ? "cloudy_snowing" : "wb_sunny", pct: 40 },
@@ -106,7 +94,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
           <div className="absolute inset-0 bg-gradient-to-r from-error/15 via-transparent to-transparent pointer-events-none" />
           <div className="relative z-10 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-error-container/40 flex items-center justify-center text-error shrink-0">
-              <span className="material-symbols-outlined text-[24px]">crisis_alert</span>
+              <WeatherIcon name="crisis_alert" className="w-6 h-6 text-error" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
@@ -167,9 +155,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
             role="button"
             tabIndex={0}
           >
-            <span className="material-symbols-outlined text-primary text-[20px] group-hover:scale-110 transition-transform">
-              location_on
-            </span>
+            <WeatherIcon name="location_on" className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
             <span className="font-display text-lg sm:text-xl font-semibold text-on-surface tracking-tight group-hover:text-primary transition-colors">
               {[extLocation.city, extLocation.region, extLocation.country].filter(Boolean).join(", ")}
             </span>
@@ -194,15 +180,15 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high/80 border border-white/[0.04] text-xs">
-              <span className="material-symbols-outlined text-[16px] text-primary">grain</span>
+              <WeatherIcon name="grain" className="w-4 h-4 text-primary" />
               <span className="text-on-surface font-medium">Doppler Basin Station 02</span>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high/80 border border-white/[0.04] text-xs">
-              <span className="material-symbols-outlined text-[16px] text-primary">air</span>
+              <WeatherIcon name="air" className="w-4 h-4 text-primary" />
               <span className="text-on-surface font-medium">Barometric {pressureVal}</span>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high/80 border border-white/[0.04] text-xs">
-              <span className="material-symbols-outlined text-[16px] text-primary">water_drop</span>
+              <WeatherIcon name="water_drop" className="w-4 h-4 text-primary" />
               <span className="text-on-surface font-medium">Humidity: {humidityNum}%</span>
             </div>
           </div>
@@ -236,11 +222,9 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         {/* Hourly Forecast (2 Cols) */}
         <div className="lg:col-span-2 bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
           <div className="flex items-center justify-between pb-3">
-            <div className="flex items-center gap-1.5 text-on-surface-variant text-xs">
-              <span className="material-symbols-outlined text-[18px]">schedule</span>
-              <span className="font-semibold uppercase tracking-wider">
-                {isRainy ? "Hourly Monsoon Timeline" : "Hourly Outlook"}
-              </span>
+            <div className="flex items-center gap-2 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+              <WeatherIcon name="schedule" className="w-4 h-4 text-primary" />
+              <span>{isRainy ? "Hourly Monsoon Timeline" : "Hourly Outlook"}</span>
             </div>
             <span className="text-xs font-semibold text-primary">Next 24 Hours</span>
           </div>
@@ -258,17 +242,12 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
                 <span className={`text-xs ${slot.active ? "text-primary font-bold" : "text-on-surface-variant font-medium"}`}>
                   {slot.label}
                 </span>
-                <span
-                  className="material-symbols-outlined text-[26px] text-primary my-1"
-                  style={{ fontVariationSettings: slot.active ? "'FILL' 1" : undefined }}
-                >
-                  {slot.icon}
-                </span>
+                <WeatherIcon name={slot.icon} className="w-6 h-6 text-primary my-1" />
                 <span className="text-base font-semibold text-on-surface">
                   {formatTemp(slot.temp, isMetric)}
                 </span>
                 <div className="flex items-center gap-0.5 text-primary text-[11px] font-mono">
-                  <span className="material-symbols-outlined text-[12px]">water_drop</span>
+                  <WeatherIcon name="water_drop" className="w-3 h-3 text-primary" />
                   <span>{slot.pop}</span>
                 </div>
               </div>
@@ -280,10 +259,10 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         <div className="lg:col-span-2 bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04] relative overflow-hidden group">
           <div className="flex items-center justify-between pb-2 relative z-10">
             <div className="flex items-center gap-1.5 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[18px] text-primary">radar</span>
+              <WeatherIcon name="radar" className="w-4 h-4 text-primary" />
               <span>Doppler Precipitation Radar</span>
             </div>
-            <div className="flex items-center gap-1 text-[11px] text-primary font-semibold">
+            <div className="flex items-center gap-1.5 text-[11px] text-primary font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               <span>Live Loop</span>
             </div>
@@ -291,7 +270,6 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
 
           {/* Interactive Radar Map Surface */}
           <div className="relative w-full h-36 my-2 rounded-xl overflow-hidden bg-[#090e17] border border-white/10 flex items-center justify-center">
-            {/* Atmospheric cloud swirl / radar graphic */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-500/20 via-blue-900/10 to-transparent" />
             <div className="w-24 h-24 rounded-full bg-sky-400/20 blur-xl animate-pulse" />
 
@@ -325,9 +303,10 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
             <button
               type="button"
               onClick={onOpenSearch}
-              className="text-xs font-semibold text-primary hover:text-white transition-colors cursor-pointer"
+              className="text-xs font-semibold text-primary hover:text-white transition-colors cursor-pointer flex items-center gap-1"
             >
-              Expand Radar ↗
+              <span>Expand Radar</span>
+              <WeatherIcon name="open" className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -338,8 +317,8 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         {/* 10-Day Outlook (2 Cols) */}
         <div className="lg:col-span-2 bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
           <div className="flex items-center justify-between pb-3">
-            <div className="flex items-center gap-1.5 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+            <div className="flex items-center gap-2 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+              <WeatherIcon name="calendar_month" className="w-4 h-4 text-primary" />
               <span>10-Day Outlook · Track</span>
             </div>
             <span className="text-xs font-medium text-outline">Tapering Outlook</span>
@@ -352,9 +331,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
                   {item.day}
                 </span>
                 <div className="flex items-center gap-2 w-28">
-                  <span className="material-symbols-outlined text-primary text-[18px]">
-                    {item.icon}
-                  </span>
+                  <WeatherIcon name={item.icon} className="w-4 h-4 text-primary shrink-0" />
                   <span className="text-xs text-on-surface-variant truncate">
                     {item.desc}
                   </span>
@@ -379,11 +356,11 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         {/* Air Quality (1 Col) */}
         <div className="bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[18px]">air</span>
+            <div className="flex items-center gap-2 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+              <WeatherIcon name="air" className="w-4 h-4 text-primary" />
               <span>Air Quality</span>
             </div>
-            <span className="material-symbols-outlined text-primary text-[20px]">eco</span>
+            <WeatherIcon name="eco" className="w-5 h-5 text-primary" />
           </div>
 
           <div className="py-2">
@@ -413,8 +390,8 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         {/* Wind Kinematics (1 Col) */}
         <div className="bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[18px]">navigation</span>
+            <div className="flex items-center gap-2 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+              <WeatherIcon name="navigation" className="w-4 h-4 text-primary" />
               <span>Wind Kinematics</span>
             </div>
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-surface-container-high text-primary uppercase">
@@ -428,7 +405,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
               <span className="text-sm font-medium text-on-surface-variant">km/h</span>
             </div>
             <div className="flex items-center gap-1.5 pt-1 text-on-surface-variant text-xs font-medium">
-              <span className="material-symbols-outlined text-[16px] text-tertiary">air</span>
+              <WeatherIcon name="air" className="w-4 h-4 text-tertiary" />
               <span>Gusts up to {windKmh + 18} km/h</span>
             </div>
           </div>
@@ -445,8 +422,8 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         {/* UV Index */}
         <div className="bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[18px]">wb_sunny</span>
+            <div className="flex items-center gap-2 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+              <WeatherIcon name="wb_sunny" className="w-4 h-4 text-primary" />
               <span>UV Index</span>
             </div>
             <span className="text-[11px] text-outline font-medium">Stratus Shield</span>
@@ -480,8 +457,8 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         {/* Moisture / Humidity */}
         <div className="bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[18px]">humidity_percentage</span>
+            <div className="flex items-center gap-2 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+              <WeatherIcon name="humidity" className="w-4 h-4 text-primary" />
               <span>Atmospheric Moisture</span>
             </div>
             <span className="text-[11px] text-primary font-semibold">High Saturation</span>
@@ -506,8 +483,8 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         {/* Solar Cycle */}
         <div className="bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[18px]">routine</span>
+            <div className="flex items-center gap-2 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+              <WeatherIcon name="routine" className="w-4 h-4 text-primary" />
               <span>Solar Cycle</span>
             </div>
             <span className="text-[10px] font-semibold text-outline uppercase">
@@ -517,13 +494,13 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
 
           <div className="py-2 flex items-center justify-around">
             <div className="flex flex-col items-center">
-              <span className="material-symbols-outlined text-tertiary text-[22px]">wb_twilight</span>
+              <WeatherIcon name="wb_twilight" className="w-5 h-5 text-tertiary" />
               <span className="text-[10px] font-semibold text-outline mt-1 uppercase">Sunrise</span>
               <span className="text-sm font-bold text-on-surface font-mono">6:08 AM</span>
             </div>
             <div className="h-8 w-px bg-surface-container-highest" />
             <div className="flex flex-col items-center">
-              <span className="material-symbols-outlined text-secondary text-[22px]">bedtime</span>
+              <WeatherIcon name="sunset" className="w-5 h-5 text-secondary" />
               <span className="text-[10px] font-semibold text-outline mt-1 uppercase">Sunset</span>
               <span className="text-sm font-bold text-on-surface font-mono">7:12 PM</span>
             </div>
@@ -537,11 +514,11 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
         {/* Horizon Visibility */}
         <div className="bg-surface-container-low rounded-2xl p-5 shadow-md flex flex-col justify-between border border-white/[0.04]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[18px]">visibility</span>
+            <div className="flex items-center gap-2 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+              <WeatherIcon name="visibility" className="w-4 h-4 text-primary" />
               <span>Horizon Visibility</span>
             </div>
-            <span className="material-symbols-outlined text-outline text-[18px]">foggy</span>
+            <WeatherIcon name="foggy" className="w-4 h-4 text-outline" />
           </div>
 
           <div className="py-2">
@@ -590,7 +567,7 @@ export function WeatherBento({ data, isMetric, onOpenSearch }: WeatherBentoProps
             className="px-4 py-2.5 rounded-xl bg-primary-container text-on-primary-container text-xs font-bold hover:opacity-90 transition-opacity shadow-md inline-flex items-center gap-1.5 cursor-pointer"
           >
             <span>Live Marine Advisory</span>
-            <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+            <WeatherIcon name="arrow_forward" className="w-3.5 h-3.5" />
           </a>
         </div>
       </div>
