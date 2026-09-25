@@ -1,0 +1,18 @@
+services:
+  weather-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: maybesurya-weather
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - WEATHER_PROVIDER_PRIMARY=open-meteo
+      - WEATHER_PROVIDER_FALLBACKS=met-no
+      - WEATHER_PROVIDER_USER_AGENT=maybesurya-weather/1.0 (+https://weather.maybesurya.dev)
+      - RATE_LIMIT_FAIL_MODE=closed
+      # Upstash Redis configuration for distributed rate limiting (optional locally, recommended for production)
+      # - UPSTASH_REDIS_REST_URL=https://your-upstash-redis.upstash.io
+      # - UPSTASH_REDIS_REST_TOKEN=your_upstash_token

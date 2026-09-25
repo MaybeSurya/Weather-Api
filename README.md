@@ -5,12 +5,21 @@
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.6-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)
 ![Vitest](https://img.shields.io/badge/Tests-80%20Passed-brightgreen?style=for-the-badge&logo=vitest)
 ![License](https://img.shields.io/badge/License-MIT-amber?style=for-the-badge)
 
 A fast, modern, and privacy-friendly global weather web application and public REST API. Designed with premium glassmorphism, dynamic GSAP atmospheric motion scenes, real-time astronomical solar cycle tracking, and smart location-first search.
 
 [**Live Web App**](https://weather.maybesurya.dev) • [**Developer Docs**](https://docs.maybesurya.dev) • [**API Endpoint**](https://weather.maybesurya.dev/api/weather)
+
+<br />
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmaybesurya%2Fweather-api&project-name=maybesurya-weather&repository-name=weather-api)
+&nbsp;
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/maybesurya/weather-api)
+&nbsp;
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/maybesurya/weather-api)
 
 </div>
 
@@ -196,37 +205,181 @@ if data.get("status") == "success":
 
 ---
 
-## Getting Started
+## Running Locally
 
 ### Prerequisites
 
 - **Node.js**: `>= 20.9` (LTS recommended)
 - **npm**: `>= 10.0`
 
-### Installation
+### Step-by-Step Local Setup
 
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/maybesurya/weather-api.git
    cd weather-api
    ```
 
-2. Install dependencies:
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. Setup environment configuration:
+3. **Set up local environment configuration:**
    ```bash
    cp .env.example .env.local
    ```
+   *(If Upstash credentials are left empty during local testing, an in-memory sliding-window limiter is used automatically).*
 
-4. Start the local development server:
+4. **Run the development server:**
    ```bash
    npm run dev
    ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. **Run the production build locally:**
+   ```bash
+   npm run build
+   npm start
+   ```
+
+---
+
+## Deployment Guide
+
+### Option 1: One-Click Cloud Deployments
+
+#### Deploy with Vercel (Recommended)
+1. Click the button below:  
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmaybesurya%2Fweather-api&project-name=maybesurya-weather&repository-name=weather-api)
+2. Enter your project name and link your Git repository.
+3. Configure the environment variables (see [Environment Variables](#environment-variables)).
+4. Click **Deploy**.
+
+#### Deploy to Netlify
+1. Click the deploy button:  
+   [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/maybesurya/weather-api)
+2. Connect your GitHub account and repository.
+3. Set the build command to `npm run build` and publish directory to `.next`.
+4. Add environment variables and click **Deploy Site**.
+
+#### Deploy to Render
+1. Click the deploy button:  
+   [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/maybesurya/weather-api)
+2. Select **Web Service**.
+3. Choose the **Node** runtime, set Build Command to `npm install && npm run build`, and Start Command to `npm start`.
+4. Add environment variables and deploy.
+
+---
+
+### Option 2: Docker Deployment
+
+A lightweight, multi-stage [`Dockerfile`](Dockerfile) and [`docker-compose.yml`](docker-compose.yml) are pre-configured.
+
+#### Using Docker Compose (Fastest)
+
+```bash
+# Clone the repository
+git clone https://github.com/maybesurya/weather-api.git
+cd weather-api
+
+# Start the containerized application
+docker compose up -d
+```
+The application will be live at `http://localhost:3000`.
+
+#### Using Docker CLI
+
+```bash
+# Build the production Docker image
+docker build -t maybesurya-weather .
+
+# Run the container
+docker run -d \
+  -p 3000:3000 \
+  --name maybesurya-weather \
+  -e WEATHER_PROVIDER_PRIMARY=open-meteo \
+  -e WEATHER_PROVIDER_FALLBACKS=met-no \
+  -e WEATHER_PROVIDER_USER_AGENT="maybesurya-weather/1.0 (+https://weather.maybesurya.dev)" \
+  maybesurya-weather
+```
+
+---
+
+### Option 3: VPS Deployment (Ubuntu / Debian)
+
+Follow these steps to host on any VPS provider (DigitalOcean, AWS EC2, Linode, Hetzner, Vultr):
+
+#### 1. Server Preparation
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl git nginx
+
+# Install Node.js 20.x
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Install PM2 process manager globally
+sudo npm install -g pm2
+```
+
+#### 2. Clone & Build
+```bash
+git clone https://github.com/maybesurya/weather-api.git /var/www/weather-api
+cd /var/www/weather-api
+
+npm install
+cp .env.example .env.local
+# Edit .env.local with your preferred nano/vim editor
+nano .env.local
+
+npm run build
+```
+
+#### 3. Start Application with PM2
+```bash
+pm2 start npm --name "maybesurya-weather" -- start
+pm2 save
+pm2 startup
+```
+
+#### 4. Configure Nginx Reverse Proxy
+Create an Nginx configuration file:
+```bash
+sudo nano /etc/nginx/sites-available/weather
+```
+
+Add the following configuration (replace `weather.yourdomain.com` with your domain):
+```nginx
+server {
+    listen 80;
+    server_name weather.yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Enable the site and reload Nginx:
+```bash
+sudo ln -s /etc/nginx/sites-available/weather /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+#### 5. Secure with Free SSL (Let's Encrypt / Certbot)
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d weather.yourdomain.com
+```
 
 ---
 
@@ -236,7 +389,7 @@ if data.get("status") == "success":
 | :--- | :--- | :--- |
 | `WEATHER_PROVIDER_PRIMARY` | Primary weather provider | `open-meteo` |
 | `WEATHER_PROVIDER_FALLBACKS` | Comma-separated fallback providers | `met-no` |
-| `WEATHER_PROVIDER_USER_AGENT` | Custom User-Agent for provider compliance | Required |
+| `WEATHER_PROVIDER_USER_AGENT` | Custom User-Agent for provider compliance | Required in production |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis URL for distributed rate limiting | In-memory dev fallback if unset |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST Token | In-memory dev fallback if unset |
 | `RATE_LIMIT_FAIL_MODE` | Rate limiter failure strategy (`open` or `closed`) | `closed` |

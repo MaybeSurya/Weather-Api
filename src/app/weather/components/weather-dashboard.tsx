@@ -520,7 +520,7 @@ export function WeatherDashboard() {
                 <span>GitHub</span>
               </a>
               <a
-                href="https://weather.maybesurya.dev/api/weather"
+                href="https://github.com/MaybeSurya/Weather-Api"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1.5"
